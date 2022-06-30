@@ -34,8 +34,13 @@ struct termios orig_termios;
   Prints error message thats acquired from const char * argument and exits
 */
 void die (const char *s) {
+
+    write(STDOUT_FILENO, "\x1b[2J", 4);
+    write(STDOUT_FILENO, "\x1b[H", 3);
+
     perror(s);
     exit(1);
+  
 }
 
 void disableRawMode () {
@@ -185,7 +190,10 @@ void editorProcessKeypress () {
   switch (c) {
 
     //if input is 'ctrl + q' then exit
+    //clear and reposition on exit
     case CTRL_KEY('q'):
+      write(STDOUT_FILENO, "\x1b[2J", 4);
+      write(STDOUT_FILENO, "\x1b[H", 3);
       exit(0);
       break;
     
