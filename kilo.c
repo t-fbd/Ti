@@ -5,6 +5,8 @@
                 editor.
 */
 
+/*** includes ***/
+
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
@@ -12,12 +14,18 @@
 #include <termios.h>
 #include <unistd.h>
 
+
+/*** data ***/
+
 /*
   Create struct for original terminal flags
   https://www.man7.org/linux/man-pages/man3/termios.3.html <- termios docs
 */
 
 struct termios orig_termios;
+
+
+/*** terminal ***/
 
 /*
   Prints error message thats acquired from const char * argument and exits
@@ -108,6 +116,8 @@ void enableRawMode () {
     
 }
 
+
+/*** init ***/
 
 int main () {
   /*
