@@ -6,6 +6,7 @@
 */
 
 #include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
@@ -18,14 +19,29 @@
 
 struct termios orig_termios;
 
+/*
+  Prints error message thats acquired from const char * argument and exits
+*/
+void die (const char *s) {
+    perror(s);
+    exit(1);
+}
+
 void disableRawMode () {
   
   /*
     Set orig_termios flags as user_default - called at exit
     TCSAFLUSH option discard any unread input before applying 
     changes to the terminal
+  
+    if tcsetattr returns -1 which is a an error/failure then
+      print error message "tcsetattr" and exit
   */
-  tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios) == -1) {
+    
+    die("tcsetattr");
+    
+  }
   
 }
 
@@ -33,8 +49,9 @@ void enableRawMode () {
 
   /*
     Get user default termios and return to defaults at exit
+    exit with message "tcgetattr" on failure
   */
-  tcgetattr(STDIN_FILENO, &orig_termios);
+  if (tcgetattr(STDIN_FILENO, &orig_termios) == -1) die("tcgetattr");
   atexit(disableRawMode);
   
   /*
@@ -82,7 +99,12 @@ void enableRawMode () {
   raw.c_lflag &= ~( ECHO | ICANON | IEXTEN |ISIG );
   raw.c_cc[VMIN] = 0;
   raw.c_cc[VTIME] = 1;
-  tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+  
+  /*
+    set flag attributes
+    exit with message "tcsetattr" on failure
+  */
+  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) die("tcsetattr");
     
 }
 
@@ -105,8 +127,14 @@ int main () {
   
     /*
       Read STDIN_FILENO to address of buffer 'c' 1 byte at a time
+      exit with message "read" on failure
+    
+      from 'snaptoken' regarding EAGAIN 
+        "In Cygwin, when read() times out it returns -1 with an errno of EAGAIN, 
+        instead of just returning 0 like it’s supposed to. To make it work in 
+        Cygwin, we won’t treat EAGAIN as an error."
     */ 
-    read(STDIN_FILENO, &c, 1);
+    if (read(STDIN_FILENO, &c, 1) == -1 && errno != EAGAIN) die("read");
     
     /*
       iscntrl test if input is a control character - control chars (ie. non printable 
