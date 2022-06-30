@@ -154,6 +154,23 @@ char editorReadKey () {
 /*** output ***/
 
 /*
+  y < 24 will change, currently set for terminal size of 80x24
+  '~\r\n' is 3 bytes that will write to STDOUT a tilde + carriage 
+    return + newline
+
+*/
+void editorDrawRows () {
+  
+  int y;
+  for (y = 0; y < 24; ++y) {
+
+    write(STDOUT_FILENO, "~\r\n", 3);
+        
+  }
+  
+}
+
+/*
   \x1b = ESC character / ASCII dec = '27'
   
   terminal escape sequences always start with ESC followed by a '[' char
@@ -173,6 +190,12 @@ char editorReadKey () {
 void editorRefreshScreen() {
   
   write(STDOUT_FILENO, "\x1b[2J", 4);
+  write(STDOUT_FILENO, "\x1b[H", 3);
+  
+  //draw tildes on blank lines
+  editorDrawRows();
+  
+  //reposition cursor after drawing tildes
   write(STDOUT_FILENO, "\x1b[H", 3);
   
 }
