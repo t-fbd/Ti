@@ -14,6 +14,9 @@
 #include <termios.h>
 #include <unistd.h>
 
+/*** defines ***/
+
+#define CTRL_KEY(key) ((key) & 0x1f)
 
 /*** data ***/
 
@@ -116,6 +119,53 @@ void enableRawMode () {
     
 }
 
+/*
+  Waits for one keypress and returns it
+*/
+char editorReadKey () {
+  /*
+    Initialize char c to use as a buffer
+  */  
+  int nread;
+  char c;
+  
+  /*
+    Read STDIN_FILENO to address of buffer 'c' 1 byte at a time
+    exit with message "read" on failure
+    
+    from 'snaptoken' regarding EAGAIN 
+    "In Cygwin, when read() times out it returns -1 with an errno of EAGAIN, 
+    instead of just returning 0 like it’s supposed to. To make it work in 
+    Cygwin, we won’t treat EAGAIN as an error."
+  */ 
+  while ((nread = read(STDIN_FILENO, &c, 1)) != 1) {
+    if (nread == -1 && errno != EAGAIN) die("read");
+  }
+  
+  return c;
+
+}
+
+/*** input ***/
+
+/*
+  Waits for a keypress and handles it - deals with mapping keys to editor 
+  functions at a higher level
+*/
+void editorProcessKeypress () {
+  
+  char c = editorReadKey();
+  
+  switch (c) {
+
+    //if input is 'ctrl + q' then exit
+    case CTRL_KEY('q'):
+      exit(0);
+      break;
+    
+  }
+  
+}
 
 /*** init ***/
 
@@ -130,38 +180,8 @@ int main () {
   enableRawMode();
   
   while (1) {
-    /*
-      Initialize char c to use as a buffer
-    */
-    char c = '\0';
-  
-    /*
-      Read STDIN_FILENO to address of buffer 'c' 1 byte at a time
-      exit with message "read" on failure
     
-      from 'snaptoken' regarding EAGAIN 
-        "In Cygwin, when read() times out it returns -1 with an errno of EAGAIN, 
-        instead of just returning 0 like it’s supposed to. To make it work in 
-        Cygwin, we won’t treat EAGAIN as an error."
-    */ 
-    if (read(STDIN_FILENO, &c, 1) == -1 && errno != EAGAIN) die("read");
-    
-    /*
-      iscntrl test if input is a control character - control chars (ie. non printable 
-      characters) are ASCII codes 0-31 and 127. ASCII 32-126 are printable characters
-    */
-    if (iscntrl(c)) {
-    
-      printf("%d\r\n", c);
-    
-    }else {
-    
-        printf("%d (%c)\r\n", c, c);
-    
-    }//end if/else
-  
-    //if input is 'q' then break while loop
-    if (c == 'q') break;
+      editorProcessKeypress();
     
   }
   
