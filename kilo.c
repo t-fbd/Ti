@@ -134,9 +134,9 @@ char editorReadKey () {
     exit with message "read" on failure
     
     from 'snaptoken' regarding EAGAIN 
-    "In Cygwin, when read() times out it returns -1 with an errno of EAGAIN, 
-    instead of just returning 0 like it’s supposed to. To make it work in 
-    Cygwin, we won’t treat EAGAIN as an error."
+      "In Cygwin, when read() times out it returns -1 with an errno of EAGAIN, 
+      instead of just returning 0 like it’s supposed to. To make it work in 
+      Cygwin, we won’t treat EAGAIN as an error."
   */ 
   while ((nread = read(STDIN_FILENO, &c, 1)) != 1) {
     if (nread == -1 && errno != EAGAIN) die("read");
@@ -146,11 +146,31 @@ char editorReadKey () {
 
 }
 
+/*** output ***/
+
+/*
+  \x1b = ESC character / ASCII dec = '27'
+  
+  terminal escape sequences always start with ESC followed by a '[' char
+  the 'J' command - the 'J' command is for 'Erase In Display' / clear screen
+    and the parameter of 2 is to clear the entire screen
+
+  refer to https://vt100.net/docs/vt100-ug/chapter3.html#ED for info on 
+  'Erase In Display'
+
+  VT100 escape sequences will mostly be used within this editor
+*/
+void editorRefreshScreen() {
+  
+  write(STDOUT_FILENO, "\x1b[2j", 4);
+  
+}
+
 /*** input ***/
 
 /*
   Waits for a keypress and handles it - deals with mapping keys to editor 
-  functions at a higher level
+    functions at a higher level
 */
 void editorProcessKeypress () {
   
@@ -174,13 +194,14 @@ int main () {
     Enable raw mode
   
     Refer to https://pubs.opengroup.org/onlinepubs/7908799/xbd/termios.html
-    'General Terminal Interface - The Single UNIX ® Specification, Version 2'
-    for info on canonical and raw input modes.
+      'General Terminal Interface - The Single UNIX ® Specification, Version 2'
+      for info on canonical and raw input modes.
   */
   enableRawMode();
   
   while (1) {
     
+      editorRefreshScreen();
       editorProcessKeypress();
     
   }
