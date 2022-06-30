@@ -155,6 +155,11 @@ char editorReadKey () {
   the 'J' command - the 'J' command is for 'Erase In Display' / clear screen
     and the parameter of 2 is to clear the entire screen
 
+  the H command is for cursor position - can take two arguments of row and 
+    column number, for example /x1b[12;40H would center the cursor in the 
+    center of the screen on a 80x24 size terminal. The default arguments 
+    for H are (1;1). Rows and columns start at 1, not 0.
+
   refer to https://vt100.net/docs/vt100-ug/chapter3.html#ED for info on 
   'Erase In Display'
 
@@ -162,7 +167,8 @@ char editorReadKey () {
 */
 void editorRefreshScreen() {
   
-  write(STDOUT_FILENO, "\x1b[2j", 4);
+  write(STDOUT_FILENO, "\x1b[2J", 4);
+  write(STDOUT_FILENO, "\x1b[H", 3);
   
 }
 
