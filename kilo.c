@@ -101,6 +101,8 @@ typedef struct erow {
   time_t comes from time.h,  E.statusmsg will display a status message - blank by default
     E.statusmsg_time will contain the timestamp when status message is set
 
+  'dirty' is a flag to notify if changes have been made to file
+
   Initilialize a global config struct 'E'
 */
 struct editorConfig {
@@ -114,6 +116,7 @@ struct editorConfig {
   int numrows;
   //create array of 'row' erow structs
   erow *row;
+  int dirty;
   char *filename;
   char statusmsg[80];
   time_t statusmsg_time;
@@ -123,6 +126,10 @@ struct editorConfig {
 
 struct editorConfig E;
 
+
+/*~~~~~~~~~~~~~~~~~~~~ function prototypes ~~~~~~~~~~~~~~~~~~~*/
+
+void editorSetStatusMessage(const char *fmt, ...);
 
 /*~~~~~~~~~~~~~~~~~~~~ terminal ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -661,10 +668,27 @@ void editorSave() {
   
   */
   int fd = open(E.filename, O_RDWR | O_CREAT, 0644);
-  ftruncate(fd, len);
-  write(fd, buf, len);
-  close(fd);
+  //error handling
+  if (fd != -1) {
+    
+    if (ftruncate(fd, len) != -1) {
+      
+      if (write(fd, buf, len) == len) {
+        
+        close(fd);
+        free(buf);
+        //confirm if save was successful
+        editorSetStatusMessage("%d bytes written to disk", len);
+        return;
+        
+      }
+      
+    }
+     
+  }
+  
   free(buf);
+  editorSetStatusMessage("Failed write to disk! I/O error: %s", strerror(errno));
   
 }
 
@@ -1108,6 +1132,10 @@ void editorProcessKeypress () {
       exit(0);
       break;
     
+    case CTRL_KEY('s'):
+      editorSave();
+      break;
+    
     //home key sets cursor to start of line
     case HOME_KEY:
       editorMoveCursor(c);
@@ -1176,7 +1204,10 @@ void initEditor () {
   E.coloff = 0;
   E.numrows = 0;
   E.row = NULL;
+  E.dirty = 0;
   E.filename = NULL;
+  E.statusmsg[0] = '\0';
+  E.statusmsg_time = 0;
   
   if (getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");
   //keep 2 lines free at bottom of screen for status bar info
@@ -1201,7 +1232,7 @@ int main (int argc, char *argv[]) {
   
   }
   
-  editorSetStatusMessage("<C-q> = quit");
+  editorSetStatusMessage("<C-q> = Quit  |  <C-s> = Save");
   
   while (1) {
     
