@@ -29,7 +29,9 @@ enum editorKey {
   ARROW_LEFT = 1000,
   ARROW_RIGHT,
   ARROW_UP,
-  ARROW_DOWN
+  ARROW_DOWN,
+  PAGE_UP,
+  PAGE_DOWN
   
 };
 
@@ -189,17 +191,38 @@ int editorReadKey () {
     if (read(STDIN_FILENO, &seq[0], 1) != 1) return '\x1b';
     if (read(STDIN_FILENO, &seq[1], 1) != 1) return '\x1b';
     
+    //check for ESC[ sequence
     if (seq[0] == '[') {
-      
-      switch (seq[1]) {
+      //check for a parameter that is an integer 0 through 9
+      if (seq[1] >= '0' && seq[1] <= '9') {
         
-        case 'A': return ARROW_UP;
-        case 'B': return ARROW_DOWN;
-        case 'C': return ARROW_RIGHT;
-        case 'D': return ARROW_LEFT;
+        if (read(STDIN_FILENO, &seq[2], 1) != 1) return '\x1b';
+        //check if '~' is in ESC[X sequence
+        if (seq[2] == '~') {
+          
+          switch (seq[1]) {
+            
+            // \x1b[5~ = page up
+            case '5': return PAGE_UP;
+            // \x1b[6~ = page down
+            case '6': return PAGE_DOWN;
+            
+          }
+          
+        }
+        
+      } else {
+        switch (seq[1]) {
+        
+          case 'A': return ARROW_UP;
+          case 'B': return ARROW_DOWN;
+          case 'C': return ARROW_RIGHT;
+          case 'D': return ARROW_LEFT;
                 
-      }
-      
+        }
+
+      } 
+
     }
     
     return '\x1b';
@@ -518,6 +541,20 @@ void editorProcessKeypress () {
       exit(0);
       break;
     
+    //set page up and page down logic
+    case PAGE_UP:
+    case PAGE_DOWN:
+      {
+        
+        //implement page up and page down to just move up or down the length 
+        //of the screen
+        int times = E.screenrows;
+        while (times--)
+          editorMoveCursor(c == PAGE_UP ? ARROW_UP : ARROW_DOWN);
+        
+      }
+      break;
+
     //send to editorMoveCursor()
     case ARROW_LEFT:
     case ARROW_DOWN:
