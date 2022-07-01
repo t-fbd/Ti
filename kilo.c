@@ -264,7 +264,7 @@ int getWindowSize (int *rows, int *cols) {
     terminal)
 
   String '~\r\n' is 3 bytes that will write to STDOUT a tilde + carriage
-    return + newline
+    return + newline, if last line is reached then make an exception
 
 */
 void editorDrawRows () {
@@ -272,7 +272,13 @@ void editorDrawRows () {
   int y;
   for (y = 0; y < E.screenrows; ++y) {
 
-    write(STDOUT_FILENO, "~\r\n", 3);
+    write(STDOUT_FILENO, "~", 1);
+    
+    if (y < E.screenrows -1) {
+      
+      write(STDOUT_FILENO, "\r\n", 2);
+      
+    }
         
   }
   
