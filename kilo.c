@@ -396,6 +396,29 @@ int getWindowSize (int *rows, int *cols) {
 
 /*~~~~~~~~~~~~~~~~~~~~ row operations ~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+/*
+  Covert char index to render index, loop through all chars in chars index and
+  add space in render index for tabs - return render index (rx) which will be used 
+  instead of chars index (cx)
+*/
+int editorRowCxToRx (erow *row, int cx) {
+  
+  int rx = 0;
+  int j;
+  for (j = 0; j < cx; ++j) {
+    
+    if (row->chars[j] == '\t')
+      //    columns left of tab , columns right of last tab
+      rx += (KILO_TAB_STOP - 1) - (rx % KILO_TAB_STOP);
+    //goto next tab stop
+    rx++;
+    
+  }
+  
+  return rx;
+  
+}
+
 void editorUpdateRow (erow *row) {
 
   //all of this essentially will copy each row into render variables so tabs can 
@@ -550,6 +573,15 @@ void abFree(struct abuf *ab) {
     accordingly
 */
 void editorScroll () {
+  
+  //set horizontal cursor position for render index
+  E.rx = 0;
+  if (E.cy < E.numrows) {
+    
+    E.rx = editorRowCxToRx(&E.row[E.cy], E.cx);
+    
+  }
+  
   //check if cursor is above visible window, if so scroll to cursor location
   if (E.cy < E.rowoff) {
 
@@ -565,15 +597,15 @@ void editorScroll () {
   }
   //check if cursor is past the left visible edge of window, if so scroll to cursor 
   //location
-  if (E.cx < E.coloff) {
+  if (E.rx < E.coloff) {
 
-    E.coloff= E.cx;
+    E.coloff= E.rx;
 
   }
   //set cursor to right edge of screen and allow user to scroll past right edge
-  if (E.cx >= E.coloff + E.screencols) {
+  if (E.rx >= E.coloff + E.screencols) {
     
-    E.coloff = E.cx - E.screencols + 1;
+    E.coloff = E.rx - E.screencols + 1;
     
   }
   
@@ -704,7 +736,7 @@ void editorRefreshScreen() {
   //Will draw cursors screen location instead of cursors file location after 
   //scrolling
   snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (E.cy - E.rowoff) + 1,
-                                            (E.cx - E.coloff) + 1);
+                                            (E.rx - E.coloff) + 1);
 
   abAppend(&ab, buf, strlen(buf));
   
