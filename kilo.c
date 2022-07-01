@@ -312,6 +312,11 @@ void abFree(struct abuf *ab) {
   String '~\r\n' is 3 bytes that will write to STDOUT a tilde + carriage
     return + newline, if last line is reached then make an exception
 
+  ESC sequence 'K' - 'Erase In Line', analogous to 'J' command, except it
+    applies to the current line instead of the entire screen
+
+  refer to https://vt100.net/docs/vt100-ug/chapter3.html#EL
+
 */
 void editorDrawRows (struct abuf *ab) {
   
@@ -320,6 +325,7 @@ void editorDrawRows (struct abuf *ab) {
 
     abAppend(ab, "~", 1);
     
+    abAppend(ab, "\x1b[K", 3);
     if (y < E.screenrows -1) {
       
       abAppend(ab,"\r\n", 2);
@@ -335,15 +341,25 @@ void editorDrawRows (struct abuf *ab) {
   
   terminal escape sequences always start with ESC followed by a '[' char
   the 'J' command - the 'J' command is for 'Erase In Display' / clear screen
-    and the parameter of 2 is to clear the entire screen
+    and the parameter of 2 is to clear the entire screen, this is replaced
+    with the 'K' to avoid clearing all lines and redrawing after each refresh
 
   the H command is for cursor position - can take two arguments of row and 
     column number, for example /x1b[12;40H would center the cursor in the 
     center of the screen on a 80x24 size terminal. The default arguments 
     for H are (1;1). Rows and columns start at 1, not 0.
+  
+  the 'h' and 'l' commands are for 'Set Mode' and 'Reset Mode', these are 
+    used to turn on and off features/modes of the terminal. argument ?25
+    is for hiding/showing the cursor. Not all terminals will support this
+    , if thats the case - the sequence will simply be ignored.
 
   refer to https://vt100.net/docs/vt100-ug/chapter3.html#ED for info on 
-  'Erase In Display'
+    'Erase In Display'
+  for info on 'Set Mode' and 'Reset Mode'
+    https://vt100.net/docs/vt100-ug/chapter3.html#SM
+    and https://vt100.net/docs/vt100-ug/chapter3.html#RM
+    and https://vt100.net/docs/vt100-ug/chapter3.html#S3.3.4
 
   VT100 escape sequences will mostly be used within this editor
 */
@@ -354,7 +370,7 @@ void editorRefreshScreen() {
   struct abuf ab = ABUF_INIT;
   
   //append escape sequences for clear and cursor position to buffer stream
-  abAppend(&ab, "\x1b[2J", 4);
+  abAppend(&ab, "\x1b[?25l", 6);
   abAppend(&ab, "\x1b[H", 3);
   
   //pass 'ab' into editorDrawRows to draw tildes on blank lines
@@ -362,6 +378,7 @@ void editorRefreshScreen() {
   
   //reposition cursor after drawing tildes
   abAppend(&ab, "\x1b[H", 3);
+  abAppend(&ab, "\x1b[?25h", 6);
   
   //write buffer contents to STDOUT and free allocated memory
   write(STDOUT_FILENO, ab.b, ab.len);
