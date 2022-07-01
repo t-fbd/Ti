@@ -1,2 +1,8 @@
-kilo: kilo.c
-	$(CC) kilo.c -o kilo -Wall -Wextra -pedantic -std=c99
+CC = gcc
+
+CFLAGS = -Wall -Wextra -pedantic -std=c99
+
+TARGET = kilot
+
+kilot: $(TARGET).c
+	$(CC) $(TARGET).c -o $(TARGET) $(CFLAGS)

@@ -933,7 +933,7 @@ void editorDrawRows (struct abuf *ab) {
         */
         char welcome[80];
         int welcomelen = snprintf(welcome, sizeof(welcome),
-          "Kilo editor fork by TairenFD -- version %s", KILO_VERSION);
+          "KiloT -- version %s", KILO_VERSION);
         //truncate string in case terminal screen size too small
         if (welcomelen > E.screencols) welcomelen = E.screencols;
         //center message

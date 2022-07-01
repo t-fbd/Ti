@@ -1,4 +1,4 @@
-Kilo - 'Build your own editor' fork
+KiloT - 'Build your own editor' fork of Kilo by Antirez
 ====================================
 
 This is solely being used as a learning tool. If you notice anything 
