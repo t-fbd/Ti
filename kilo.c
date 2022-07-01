@@ -58,7 +58,6 @@ enum editorKey {
     line of text as a dynamically allocated char arr, as well as the 
     length of the data
 
-  the 'numrows' variable TODO
 */
 typedef struct erow {
 
@@ -79,15 +78,17 @@ typedef struct erow {
 
   numrows correlates to the number of rows in the file
 
-  rowoff correlates to the current row of the file the user is scrolled to
+  rowoff (row offset) correlates to the current row of the file the user is scrolled to
+  coloff (column offset) correlates to the current column of the file the user is scrolled to
   
 
-  Initilialize a config struct 'E'
+  Initilialize a global config struct 'E'
 */
 struct editorConfig {
 
   int cx, cy;
   int rowoff;
+  int coloff;
   int screenrows;
   int screencols;
   int numrows;
@@ -511,6 +512,19 @@ void editorScroll () {
     E.rowoff = E.cy - E.screenrows + 1;
     
   }
+  //check if cursor is past the left visible edge of window, if so scroll to cursor 
+  //location
+  if (E.cx < E.coloff) {
+
+    E.coloff= E.cx;
+
+  }
+  //set cursor to right edge of screen and allow user to scroll past right edge
+  if (E.cx >= E.coloff + E.screencols) {
+    
+    E.coloff = E.cx - E.screencols + 1;
+    
+  }
   
 }
 
@@ -568,10 +582,12 @@ void editorDrawRows (struct abuf *ab) {
       }
     } else {
     
-      //truncate if len of text buffer in current row is more than screen len
-      int len = E.row[filerow].size;
+      //truncate if len of text buffer in current row or col is more than screen len
+      //if user scrolls horizontally past EOL, set len to 0 so nothing is displayed
+      int len = E.row[filerow].size - E.coloff;
+      if (len < 0) len = 0;
       if (len > E.screencols) len = E.screencols;
-      abAppend(ab, E.row[filerow].chars, len);
+      abAppend(ab, &E.row[filerow].chars[E.coloff], len);
     
     }
     
@@ -634,7 +650,11 @@ void editorRefreshScreen() {
       indexed values due to terminal using 1-indexed values
   */
   char buf[32];
-  snprintf(buf, sizeof(buf), "\x1b[%d;%dH", E.cy + 1, E.cx + 1);
+  //Will draw cursors screen location instead of cursors file location after 
+  //scrolling
+  snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (E.cy - E.rowoff) + 1,
+                                            (E.cx - E.coloff) + 1);
+
   abAppend(&ab, buf, strlen(buf));
   
   abAppend(&ab, "\x1b[?25h", 6);
@@ -642,12 +662,17 @@ void editorRefreshScreen() {
   //write buffer contents to STDOUT and free allocated memory
   write(STDOUT_FILENO, ab.b, ab.len);
   abFree(&ab);
+
 }
 
 
 /*~~~~~~~~~~~~~~~~~~~~ input ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 void editorMoveCursor (int key) {
+  
+  //if at end of rows string data, dont allow more scrolling to the right, 
+  //exeption is made for appending each byte to line
+  erow *row = (E.cy >= E.numrows) ? NULL : &E.row[E.cy];
   
   //change cursor position, if out-of-bounds of terminal screen then
   //dont do anything
@@ -661,8 +686,10 @@ void editorMoveCursor (int key) {
       break;
     //right
     case ARROW_RIGHT:
-      if (E.cx != E.screencols - 1) {
+      if (row && E.cx < row->size) {
+
         E.cx++;
+
       }
       break;
     //up
@@ -737,11 +764,13 @@ void editorProcessKeypress () {
 
 /*~~~~~~~~~~~~~~~~~~~~ init ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+//initialize editor default values
 void initEditor () {
   
   E.cx = 0;
   E.cy = 0;
   E.rowoff = 0;
+  E.coloff = 0;
   E.numrows = 0;
   E.row = NULL;
   
