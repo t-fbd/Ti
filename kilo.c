@@ -682,6 +682,11 @@ void editorMoveCursor (int key) {
     case ARROW_LEFT:
       if (E.cx != 0) {
         E.cx--;
+      } else if (E.cy > 0) { //move back a row if attempting to move past left edge of screen
+        
+        E.cy--;
+        E.cx = E.row[E.cy].size;
+        
       }
       break;
     //right
@@ -690,6 +695,11 @@ void editorMoveCursor (int key) {
 
         E.cx++;
 
+      } else if (row && E.cx == row->size) { //move forward a row when cursor is past rowlen
+        
+        E.cy++;
+        E.cx = 0;
+        
       }
       break;
     //up
