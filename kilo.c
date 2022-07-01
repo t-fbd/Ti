@@ -5,7 +5,10 @@
                 editor.
 */
 
-/*** includes ***/
+#define KILO_VERSION "0.0.1"
+
+
+/*~~~~~~~~~~~~~~~~~~~~ includes ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #include <asm-generic/ioctls.h>
 #include <ctype.h>
@@ -17,9 +20,8 @@
 #include <termios.h>
 #include <unistd.h>
 
-/*** defines ***/
 
-#define KILO_VERSION "0.0.1"
+/*~~~~~~~~~~~~~~~~~~~~ defines ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #define CTRL_KEY(key) ((key) & 0x1f)
 
@@ -35,7 +37,8 @@ enum editorKey {
   
 };
 
-/*** data ***/
+
+/*~~~~~~~~~~~~~~~~~~~~ data ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*
   Create struct for original terminal flags
@@ -60,7 +63,8 @@ struct editorConfig {
 
 struct editorConfig E;
 
-/*** terminal ***/
+
+/*~~~~~~~~~~~~~~~~~~~~ terminal ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*
   Prints error message thats acquired from const char * argument and exits
@@ -327,7 +331,8 @@ int getWindowSize (int *rows, int *cols) {
 
 }
 
-/*** append buffer ***/
+
+/*~~~~~~~~~~~~~~~~~~~~ append buffer ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*
   Append buffer consists of a pointer to the buffer in memory and a 
@@ -372,7 +377,8 @@ void abFree(struct abuf *ab) {
   
 }
 
-/*** output ***/
+
+/*~~~~~~~~~~~~~~~~~~~~ output ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*
   Draw tildes on all rows visable on screen (ie. cols size of 
@@ -487,7 +493,8 @@ void editorRefreshScreen() {
   abFree(&ab);
 }
 
-/*** input ***/
+
+/*~~~~~~~~~~~~~~~~~~~~ input ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 void editorMoveCursor (int key) {
   
@@ -567,7 +574,8 @@ void editorProcessKeypress () {
   
 }
 
-/*** init ***/
+
+/*~~~~~~~~~~~~~~~~~~~~ init ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 void initEditor () {
   E.cx = 0;
