@@ -5,6 +5,7 @@
                 editor.
 */
 
+#include <stddef.h>
 #define KILO_VERSION "0.0.1"
 
 
@@ -84,7 +85,8 @@ struct editorConfig {
   int screenrows;
   int screencols;
   int numrows;
-  erow row;
+  //create array of 'row' erow structs
+  erow *row;
   struct termios orig_termios;
 
 };
@@ -375,6 +377,29 @@ int getWindowSize (int *rows, int *cols) {
 }
 
 
+/*~~~~~~~~~~~~~~~~~~~~ row operations ~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+void  editorAppendRow (char *s, size_t len) {
+  
+  //allocate more space for each row
+  E.row = realloc(E.row, sizeof(erow) * (E.numrows + 1));
+  
+  /*
+    Allocate enough memory in E.row.chars for char *s and an extra null byte to 
+      signify a string
+    
+    memcpy() = void * mempcpy (void *dest, const void *src, size_t size)
+  
+  */
+  int at = E.numrows;
+  E.row[at].size = len;
+  E.row[at].chars = malloc(len + 1);
+  memcpy(E.row[at].chars, s, len);
+  E.row[at].chars[len] = '\0';
+  E.numrows++;
+  
+}
+
 /*~~~~~~~~~~~~~~~~~~~~ file I/O ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 void editorOpen(char *filename) {
@@ -396,31 +421,16 @@ void editorOpen(char *filename) {
       pointer to a malloc(3)-allocated buffer *n bytes in size.
 
   */
-  linelen = getline(&line, &linecap, fp);
-  //set linelen equal to length of file
-  if (linelen != -1) {
-    
+  //read entire file into E.row struct array, will return -1 when file reaches
+  //EOF
+  while ((linelen = getline(&line, &linecap, fp)) != -1) {
+    //set linelen equal to length of file
     while (linelen > 0 && (line[linelen - 1] == '\n' ||
-                           line[linelen - 1] == '\r' ))
-    linelen--;
+                             line[linelen - 1] == '\r' ))
+      linelen--;
+      //add each row to 'row' erow struct array
+    editorAppendRow(line, linelen);
     
-  
-  
-  /*
-    Allocate enough memory for char *line and an extra null byte to signify 
-      a string assign current character in the row data struct of the terminals 
-      global state
-    
-    memcpy() = void * mempcpy (void *dest, const void *src, size_t size)
-  
-  */
-  E.row.size = linelen;
-  E.row.chars = malloc(linelen + 1);
-  memcpy(E.row.chars, line, linelen);
-  E.row.chars[linelen] = '\0';
-  //set numrows to 1 (value can be 0 or 1) to indicate line should be displayed
-  E.numrows = 1;
-  
   }
   //free allocated memory for row
   //close file pointer
@@ -522,16 +532,17 @@ void editorDrawRows (struct abuf *ab) {
         abAppend(ab, welcome, welcomelen);
 
       } else {
-    
+        
+        //print tilde on blank lines
         abAppend(ab, "~", 1);
 
       }
     } else {
     
-      //truncate if len of text buffer in row is more than screen len
-      int len = E.row.size;
+      //truncate if len of text buffer in current row is more than screen len
+      int len = E.row[y].size;
       if (len > E.screencols) len = E.screencols;
-      abAppend(ab, E.row.chars, len);
+      abAppend(ab, E.row[y].chars, len);
     
     }
     
@@ -700,6 +711,7 @@ void initEditor () {
   E.cx = 0;
   E.cy = 0;
   E.numrows = 0;
+  E.row = NULL;
   
   if (getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");
   
