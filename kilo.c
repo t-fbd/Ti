@@ -35,6 +35,8 @@
 
 //set tab stop length
 #define KILO_TAB_STOP 8
+//set quit confimations
+#define KILO_QUIT_TIMES 1
 
 #define CTRL_KEY(key) ((key) & 0x1f)
 
@@ -501,6 +503,8 @@ void  editorAppendRow (char *s, size_t len) {
   editorUpdateRow(&E.row[at]);
   
   E.numrows++;
+  //display file has been modified
+  E.dirty++;
   
 }
 
@@ -529,6 +533,22 @@ void editorRowInsertChar (erow *row, int at, int c) {
   row->chars[at] = c;
   //render row
   editorUpdateRow(row);
+  //Display file has been modified, could be treated as a bool - may use 'dirtiness'
+  //of a file later on though
+  E.dirty++;
+  
+}
+
+void editorRowDelChar(erow *row, int at) {
+  
+  //if attempting to overwrite outside of row then return
+  if (at < 0 || at >= row->size) return;
+  //overwrite current char with character one byte ahead, essenentially shift the row
+  memmove(&row->chars[at], &row->chars[at + 1], row->size - at);
+  row->size--;
+  editorUpdateRow(row);
+  E.dirty++;
+  
   
 }
 
@@ -554,6 +574,24 @@ void editorInsertChar(int c) {
   
 }
 
+void editorDelChar () {
+  
+  //if past EOF return - nothing to remove
+  if (E.cy == E.numrows) return;
+  
+  //current row
+  erow *row = &E.row[E.cy];
+  //check if removable byte exists - if E.cx has a value then there are bytes present 
+  //at file location
+  if (E.cx > 0) { 
+  
+    //overwrite character to the left of cursor
+    editorRowDelChar(row, E.cx - 1);
+    E.cx--;
+  
+  }
+  
+}
 
 /*~~~~~~~~~~~~~~~~~~~~ file I/O ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -617,7 +655,6 @@ void editorOpen(char *filename) {
   //read entire file into E.row struct array, will return -1 when file reaches
   //EOF
   while ((linelen = getline(&line, &linecap, fp)) != -1) {
-    //set linelen equal to length of file
     while (linelen > 0 && (line[linelen - 1] == '\n' ||
                              line[linelen - 1] == '\r' ))
       linelen--;
@@ -629,6 +666,8 @@ void editorOpen(char *filename) {
   //close file pointer
   free(line);
   fclose(fp);
+  //set dirty back to 0, wouldve incremented during AppendRow init
+  E.dirty = 0;
   
 }
 
@@ -882,8 +921,9 @@ void editorDrawStatusBar (struct abuf *ab) {
   //print line count of file to status bar
   char status[80], rstatus[80];
 
-  int len = snprintf(status, sizeof(status), "%.20s - %d Lines",
-    E.filename ? E.filename : "[SCRATCH]", E.numrows);
+  //check if filename exist and if file is 'dirty', get total line count
+  int len = snprintf(status, sizeof(status), "%.20s - %d Lines %s",
+    E.filename ? E.filename : "[SCRATCH]", E.numrows, E.dirty ? "(+)" : "");
   
   //current line/total line count, E.cy is switched from 0-indexed to 1-indexed 
   //for term
@@ -1115,6 +1155,8 @@ void editorMoveCursor (int key) {
 */
 void editorProcessKeypress () {
   
+  static int quit_times = KILO_QUIT_TIMES;
+  
   int c = editorReadKey();
  
   switch (c) {
@@ -1127,6 +1169,13 @@ void editorProcessKeypress () {
     //if input is 'ctrl + q' then exit
     //clear and reposition on exit
     case CTRL_KEY('q'):
+      if (E.dirty && quit_times > 0) {
+        
+        editorSetStatusMessage("!UNSAVED CHANGES! Quit again to confirm");
+        quit_times--;
+        return;
+        
+      }
       write(STDOUT_FILENO, "\x1b[2J", 4);
       write(STDOUT_FILENO, "\x1b[H", 3);
       exit(0);
@@ -1151,7 +1200,9 @@ void editorProcessKeypress () {
     case CTRL_KEY('h'):
     //mapped to ESC[3~
     case DEL_KEY:
-      //TODO
+      //if DEL_KEY the delete key under cursor not to left of cursor
+      if (c == DEL_KEY) editorMoveCursor(ARROW_RIGHT);
+      editorDelChar();
       break;
     
     //set page up and page down logic
@@ -1188,6 +1239,8 @@ void editorProcessKeypress () {
       break;
     
   }
+  
+  quit_times = KILO_QUIT_TIMES;
   
 }
 
