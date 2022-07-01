@@ -19,6 +19,7 @@
 #include <asm-generic/ioctls.h>
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -549,6 +550,39 @@ void editorInsertChar(int c) {
 
 /*~~~~~~~~~~~~~~~~~~~~ file I/O ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+//covert row structs array into single string that can be written to file
+char *editorRowsToString (int *buflen) {
+  
+  int total_len = 0;
+  int j;
+  //cycle through rows
+  for (j = 0; j < E.numrows; ++j) 
+    //add size of current row to total_len of file + 1 byte for newline char
+    total_len += E.row[j].size + 1;
+  *buflen = total_len;
+  
+  //init 'p' pointer to memory block 'buf' that can hold size of total_len
+  char *buf = malloc(total_len);
+  char *p = buf;
+  //cycle through rows
+  for (j = 0; j < E.numrows; ++j) {
+    
+    //copy memory stored in row.chars, to p
+    memcpy(p, E.row[j].chars, E.row[j].size);
+    //set address of p one character after typed row
+    p += E.row[j].size;
+    //assign newline to address of p's current location
+    *p = '\n';
+    p++;
+    
+  }
+  
+  //return string containing all row data seprated by newlines
+  return buf;
+  
+}
+
+//open file
 void editorOpen(char *filename) {
   
   //free filename before assigning value, strdup() will return a pointer to a 
@@ -588,6 +622,49 @@ void editorOpen(char *filename) {
   //close file pointer
   free(line);
   fclose(fp);
+  
+}
+
+//write return value of editorRowsToString() to file
+void editorSave() {
+  
+  //TODO - currently wont save if filename doesnt already exist
+  if (E.filename == NULL) return;
+  
+  int len;
+  char *buf = editorRowsToString(&len);
+  
+  /*
+    open(), O_RDWR, and O_CREAT come from <fcntl.h>. ftruncate() and close() 
+      come from <unistd.h>
+    
+    O_RDRW -> Open for read and write
+    O_CREAT -> If file doesnt already exist, then create one with permissions
+      '0644' which gives owner rd and wr permission but everyone else rd permission
+    
+    ftruncate will set file size, if file is larger it will shorten it, if file is
+      shorter it will add neccessary bytes
+  
+    Possibly implement in the future -> 
+      "The normal way to overwrite a file is to pass the O_TRUNC flag to open(), 
+        which truncates the file completely, making it an empty file, before writing 
+        the new data into it. By truncating the file ourselves to the same length as 
+        the data we are planning to write into it, we are making the whole 
+        overwriting operation a little bit safer in case the ftruncate() call 
+        succeeds but the write() call fails. In that case, the file would still 
+        contain most of the data it had before. But if the file was truncated 
+        completely by the open() call and then the write() failed, you’d end up with 
+        all of your data lost.
+      More advanced editors will write to a new, temporary file, and then rename 
+        that file to the actual file the user wants to overwrite, and they’ll 
+        carefully check for errors through the whole process." - snaptoken
+  
+  */
+  int fd = open(E.filename, O_RDWR | O_CREAT, 0644);
+  ftruncate(fd, len);
+  write(fd, buf, len);
+  close(fd);
+  free(buf);
   
 }
 
@@ -1073,6 +1150,7 @@ void editorProcessKeypress () {
     
     //ignore 'clear screen' terminal keybinding, and ESC key to prevent user insertions
     case CTRL_KEY('l'):
+    //ESC key is ignored due to many EDC sequences that arent being handled like F1-F12
     case '\x1b':
       break;
     
