@@ -428,6 +428,7 @@ int editorRowCxToRx (erow *row, int cx) {
   
 }
 
+//update row from character index to rendered index
 void editorUpdateRow (erow *row) {
 
   //all of this essentially will copy each row into render variables so tabs can 
@@ -489,6 +490,33 @@ void  editorAppendRow (char *s, size_t len) {
   E.numrows++;
   
 }
+
+//user input
+void editorRowInsertChar (erow *row, int at, int c) {
+  
+  //check 'at's value, should be equal to row size
+  if (at < 0 || at > row->size) at = row->size;
+  //space for character and null byte allocated in char *chars
+  row->chars = realloc(row->chars, row->size + 2);
+  /*
+    void *memmove(void *str1, const void *str2, size_t n)
+      str1 − This is a pointer to the destination array where the content is to be copied, type-casted to a pointer of type void*.
+      str2 − This is a pointer to the source of data to be copied, type-casted to a pointer of type void*.
+      n − This is the number of bytes to be copied.
+    memmove is a safer approach to memcpy() with overlapping memory bytes
+  */
+  //use the first byte of the last two extra allocated bytes to copy 
+  //the null byte currently present at the end of the string -> +1 byte in memory
+  memmove(&row->chars[at + 1], &row->chars[at], row->size - at + 1);
+  //update row size
+  row->size++;
+  //insert character byte where previous null byte was stored
+  row->chars[at] = c;
+  //render row
+  editorUpdateRow(row);
+  
+}
+
 
 /*~~~~~~~~~~~~~~~~~~~~ file I/O ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -724,13 +752,13 @@ void editorDrawStatusBar (struct abuf *ab) {
   //print line count of file to status bar
   char status[80], rstatus[80];
 
-  int len = snprintf(status, sizeof(status), "%.20s - %d lines",
+  int len = snprintf(status, sizeof(status), "%.20s - %d line",
     E.filename ? E.filename : "[SCRATCH]", E.numrows);
   
   //current line/total line count, E.cy is switched from 0-indexed to 1-indexed 
   //for term
-  int rlen = snprintf(rstatus, sizeof(rstatus), "%d/%d", 
-    (E.cy + 1 <= E.numrows) ? E.cy + 1 : E.numrows, E.numrows);
+  int rlen = snprintf(rstatus, sizeof(rstatus), "L %d:%d", 
+    (E.cy + 1 <= E.numrows) ? E.cy + 1 : E.numrows, E.cx + 1);
 
   if (len > E.screencols) len = E.screencols;
 
