@@ -5,7 +5,6 @@
                 editor.
 */
 
-#include <stddef.h>
 #define KILO_VERSION "0.0.1"
 
 
@@ -16,6 +15,7 @@
 #define _BSD_SOURCE
 #define _GNU_SOURCE
 
+#include <stddef.h>
 #include <asm-generic/ioctls.h>
 #include <ctype.h>
 #include <errno.h>
