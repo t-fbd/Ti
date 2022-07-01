@@ -1,4 +1,4 @@
-#Kilo - 'Build your own editor' fork
+Kilo - 'Build your own editor' fork
 ====================================
 
 This is solely being used as a learning tool. If you notice anything 
@@ -10,7 +10,7 @@ See original kilo source code at [github/antirez](https://github.com/antirez/kil
 
 See 'BYOE' documents [here](https://viewsourcecode.org/snaptoken/kilo/02.enteringRawMode.html "Build Your Own Editor")
 
-#Contributers
+Contributers
 =============
 
 - github.com/tairenfd
