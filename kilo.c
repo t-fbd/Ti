@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
@@ -257,6 +258,51 @@ int getWindowSize (int *rows, int *cols) {
 
 }
 
+/*** append buffer ***/
+
+/*
+  Append buffer consists of a pointer to the buffer in memory and a 
+    length of the buffer
+
+  ABUF_INIT will represent an empty buffer, setting pointer of buffer 
+    to NULL and length to 0
+*/
+struct abuf {
+  
+  char *b;
+  int len;
+  
+};
+
+#define ABUF_INIT {NULL, 0}
+
+/*
+  realloc() and free() come from <stdlib.h>. memcpy() comes from <string.h>
+
+  use char *new to assign/reallocate a block of memory that is the size of 
+    the existing buffer - realloc will handle freeing or extending the block 
+    of memory, if buffer NULL then return, otherwise use memcpy() to copy 's' 
+    to the end of the existing buffer stream
+
+  AbFree() will free() existing memory used by 'abuf' when called
+*/
+void abAppend (struct abuf *ab, const char *s, int len) {
+
+  char *new = realloc(ab->b, ab->len + len);
+  
+  if (new == NULL) return;
+  memcpy(&new[ab->len], s, len);
+  ab->b = new;
+  ab->len += len;
+  
+}
+
+void abFree(struct abuf *ab) {
+
+  free(ab->b);
+  
+}
+
 /*** output ***/
 
 /*
@@ -267,16 +313,16 @@ int getWindowSize (int *rows, int *cols) {
     return + newline, if last line is reached then make an exception
 
 */
-void editorDrawRows () {
+void editorDrawRows (struct abuf *ab) {
   
   int y;
   for (y = 0; y < E.screenrows; ++y) {
 
-    write(STDOUT_FILENO, "~", 1);
+    abAppend(ab, "~", 1);
     
     if (y < E.screenrows -1) {
       
-      write(STDOUT_FILENO, "\r\n", 2);
+      abAppend(ab,"\r\n", 2);
       
     }
         
@@ -303,15 +349,23 @@ void editorDrawRows () {
 */
 void editorRefreshScreen() {
   
-  write(STDOUT_FILENO, "\x1b[2J", 4);
-  write(STDOUT_FILENO, "\x1b[H", 3);
+  //initialize an abuf struct 'ab' by assigning ABUF_INIT to it - which is 
+  //a null pointer and a length of 0
+  struct abuf ab = ABUF_INIT;
   
-  //draw tildes on blank lines
-  editorDrawRows();
+  //append escape sequences for clear and cursor position to buffer stream
+  abAppend(&ab, "\x1b[2J", 4);
+  abAppend(&ab, "\x1b[H", 3);
+  
+  //pass 'ab' into editorDrawRows to draw tildes on blank lines
+  editorDrawRows(&ab);
   
   //reposition cursor after drawing tildes
-  write(STDOUT_FILENO, "\x1b[H", 3);
+  abAppend(&ab, "\x1b[H", 3);
   
+  //write buffer contents to STDOUT and free allocated memory
+  write(STDOUT_FILENO, ab.b, ab.len);
+  abFree(&ab);
 }
 
 /*** input ***/
