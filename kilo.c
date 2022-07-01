@@ -1163,16 +1163,21 @@ void editorProcessKeypress () {
     
     //if input is ENTER
     case '\r':
-      //TODO
+      if (quit_times == 0) {
+        write(STDOUT_FILENO, "\x1b[2J", 4);
+        write(STDOUT_FILENO, "\x1b[H", 3);
+        exit(0);
+        break;
+      }
       break;
 
     //if input is 'ctrl + q' then exit
     //clear and reposition on exit
     case CTRL_KEY('q'):
-      if (E.dirty && quit_times > 0) {
+      if (E.dirty) {
         
-        editorSetStatusMessage("!UNSAVED CHANGES! Quit again to confirm");
-        quit_times--;
+        editorSetStatusMessage("!UNSAVED CHANGES! Press <ENTER> to confirm");
+        if (quit_times) quit_times--;
         return;
         
       }
@@ -1240,6 +1245,7 @@ void editorProcessKeypress () {
     
   }
   
+  if (quit_times == 0) editorSetStatusMessage("");
   quit_times = KILO_QUIT_TIMES;
   
 }
