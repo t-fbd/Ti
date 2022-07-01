@@ -405,6 +405,8 @@ int getWindowSize (int *rows, int *cols) {
 
 /*~~~~~~~~~~~~~~~~~~~~ row operations ~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+//Modify erow, not cursor position
+
 /*
   Covert char index to render index, loop through all chars in chars index and
   add space in render index for tabs - return render index (rx) which will be used 
@@ -500,8 +502,10 @@ void editorRowInsertChar (erow *row, int at, int c) {
   row->chars = realloc(row->chars, row->size + 2);
   /*
     void *memmove(void *str1, const void *str2, size_t n)
-      str1 − This is a pointer to the destination array where the content is to be copied, type-casted to a pointer of type void*.
-      str2 − This is a pointer to the source of data to be copied, type-casted to a pointer of type void*.
+      str1 − This is a pointer to the destination array where the content is to be 
+        copied, type-casted to a pointer of type void*.
+      str2 − This is a pointer to the source of data to be copied, type-casted to a 
+        pointer of type void*.
       n − This is the number of bytes to be copied.
     memmove is a safer approach to memcpy() with overlapping memory bytes
   */
@@ -514,6 +518,28 @@ void editorRowInsertChar (erow *row, int at, int c) {
   row->chars[at] = c;
   //render row
   editorUpdateRow(row);
+  
+}
+
+/*~~~~~~~~~~~~~~~~~~~~ editor operations ~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+/*
+  editorInsertChar() doesn’t have to worry about the details of modifying an erow, 
+    and editorRowInsertChar() doesn’t have to worry about where the cursor is. That 
+    is the difference between functions in the editor operations section and 
+    functions in the row operations section
+*/
+//move cursor to position to place cursor
+void editorInsertChar(int c) {
+  
+  //if EOL, make new row
+  if (E.cy == E.numrows) editorAppendRow("", 0);
+  
+  //editorRowInsert(erow *row, at, c)
+  //row being the row to edit, at being the location in character index to insert
+  //character, and c is the actual user input
+  editorRowInsertChar(&E.row[E.cy], E.cx, c);
+  E.cx++;
   
 }
 
@@ -752,13 +778,13 @@ void editorDrawStatusBar (struct abuf *ab) {
   //print line count of file to status bar
   char status[80], rstatus[80];
 
-  int len = snprintf(status, sizeof(status), "%.20s - %d line",
+  int len = snprintf(status, sizeof(status), "%.20s - %d Lines",
     E.filename ? E.filename : "[SCRATCH]", E.numrows);
   
   //current line/total line count, E.cy is switched from 0-indexed to 1-indexed 
   //for term
   int rlen = snprintf(rstatus, sizeof(rstatus), "L %d:%d", 
-    (E.cy + 1 <= E.numrows) ? E.cy + 1 : E.numrows, E.cx + 1);
+    E.cy + 1, E.cx + 1);
 
   if (len > E.screencols) len = E.screencols;
 
@@ -1024,6 +1050,11 @@ void editorProcessKeypress () {
     case ARROW_UP:
     case ARROW_RIGHT:
       editorMoveCursor(c);
+      break;
+    
+    //if no movement or command, then print character to screen
+    default:
+      editorInsertChar(c);
       break;
     
   }
