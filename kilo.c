@@ -40,6 +40,9 @@
 //define movement key characters
 enum editorKey {
   
+  BACKSPACE = 127,
+  //arbitrary values that are out-of-range of possible chars
+  //these are called after parsing in editorReadKey()
   ARROW_LEFT = 1000,
   ARROW_RIGHT,
   ARROW_UP,
@@ -955,6 +958,8 @@ void editorMoveCursor (int key) {
 
       }
       break;
+    //below can probably be refactored with ARROW_RIGHT and ARROW_LEFT, essentially
+    //the same function
     //down
     case ARROW_DOWN:
       if (E.cy < E.numrows) {
@@ -1012,6 +1017,11 @@ void editorProcessKeypress () {
   int c = editorReadKey();
  
   switch (c) {
+    
+    //if input is ENTER
+    case '\r':
+      //TODO
+      break;
 
     //if input is 'ctrl + q' then exit
     //clear and reposition on exit
@@ -1025,9 +1035,18 @@ void editorProcessKeypress () {
     case HOME_KEY:
       editorMoveCursor(c);
       break;
-
+    
+    //end key sets to EOL
     case END_KEY:
       editorMoveCursor(c);
+      break;
+    
+    case BACKSPACE:
+    //returns dec 8 / BS
+    case CTRL_KEY('h'):
+    //mapped to ESC[3~
+    case DEL_KEY:
+      //TODO
       break;
     
     //set page up and page down logic
@@ -1050,6 +1069,11 @@ void editorProcessKeypress () {
     case ARROW_UP:
     case ARROW_RIGHT:
       editorMoveCursor(c);
+      break;
+    
+    //ignore 'clear screen' terminal keybinding, and ESC key to prevent user insertions
+    case CTRL_KEY('l'):
+    case '\x1b':
       break;
     
     //if no movement or command, then print character to screen
