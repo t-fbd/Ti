@@ -166,6 +166,51 @@ char editorReadKey () {
 }
 
 /*
+  
+  This is essential in fallback method to find terminal screen size if ioctl
+    fails. 
+
+  ESC[ + 6(parameter) n - 'n' is the command for Device Status Report which can
+    query info about the terminal, the argument/parameter of 6 is used to ask
+    for cursor position
+  ESC[xx:xxR is the cursor postion report, the R must be parsed out
+
+  refer to https://vt100.net/docs/vt100-ug/chapter3.html#DSR
+*/
+int getCursorPosition (int *rows, int *cols) {
+  
+  char buf[32];
+  unsigned int i = 0;
+  
+  if (write(STDOUT_FILENO, "\x1b[6n", 4) != 4) return -1;
+
+  while (i < sizeof(buf) - 1) {
+    
+    if (read(STDIN_FILENO, &buf[i], 1) != 1) break;
+    //find 'R' in cursor position report
+    if (buf[i] == 'R') break;
+    i++;
+    
+  }
+  //set 'R' to null char
+  buf[i] = '\0';
+
+  if (buf[0] != '\x1b' || buf[1] != '[') return -1;
+  /*
+    If escape sequence is passed to be parsed and doesnt fail, then
+      parse numbers that correspond to height and width of terminal
+    String of xx:xx (at address of buf[2]) is passed into '%d;%d'
+      using sscanf() which will tells it to parse two integers seper-
+      -ated by an integer -> these are then passed into the variables
+      'rows' and 'cols'
+  */
+  if (sscanf(&buf[2], "%d;%d", rows, cols) != 2) return -1;
+
+  return -1;
+  
+}
+
+/*
   ioctl(), TIOCGWINSZ, and struct winsize come from <sys/ioctl.h>
   If ioctl has a failure it will return -1 and a poss-
     -ible erroneous outcome of 0
@@ -180,10 +225,27 @@ int getWindowSize (int *rows, int *cols) {
 
   struct winsize ws;
   
-  //TIOCGWINSZ = terminal i/o control get window size  
+  /*
+    TIOCGWINSZ = terminal i/o control get window size  
+  
+    if ioctl() fails, try to fallback to method using B and C
+      escape sequences and getCursorPosition() function, if that
+      fails as well then return -1 aka failure
+  */
   if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0) {
-
-    return -1;
+    
+    /*
+      Fallback for if ioctl() fails to gather screen size data
+    
+      ESC + 999C moves cursor to farthest column to the right of
+        terminal
+      ESC + 999B moves cursor to the lowest row of the terminal
+    
+      refer to https://vt100.net/docs/vt100-ug/chapter3.html#CUD
+        for more info on ESC[B and ESC[C sequesnces
+    */
+    if (write(STDOUT_FILENO, "\x1b[999C\x1b[999B", 12) != 12) return -1;
+    return getCursorPosition(rows, cols);
 
   } else {
     
