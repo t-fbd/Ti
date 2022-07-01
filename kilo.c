@@ -7,10 +7,12 @@
 
 /*** includes ***/
 
+#include <asm-generic/ioctls.h>
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -25,11 +27,15 @@
   https://www.man7.org/linux/man-pages/man3/termios.3.html <- termios docs
   
   Create global struct for editor state that contains data for terminal 
-    width and height
+    width and height, this is gathered by getWindowSize function using 
+    ioctl()
+
   Initilialize a config struct 'E'
 */
 struct editorConfig {
 
+  int screenrows;
+  int screencols;
   struct termios orig_termios;
 
 };
@@ -159,18 +165,50 @@ char editorReadKey () {
 
 }
 
+/*
+  ioctl(), TIOCGWINSZ, and struct winsize come from <sys/ioctl.h>
+  If ioctl has a failure it will return -1 and a poss-
+    -ible erroneous outcome of 0
+
+  If it succeeded, we pass the values back by setting the int 
+    references that were passed to the function. (This is a 
+    common approach to having functions return multiple values 
+    in C. It also allows you to use the return value to indicate 
+    success or failure.)
+*/
+int getWindowSize (int *rows, int *cols) {
+
+  struct winsize ws;
+  
+  //TIOCGWINSZ = terminal i/o control get window size  
+  if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0) {
+
+    return -1;
+
+  } else {
+    
+    *cols = ws.ws_col;
+    *rows = ws.ws_row;
+    return 0;
+    
+  }
+
+}
+
 /*** output ***/
 
 /*
-  y < 24 will change, currently set for terminal size of 80x24
-  '~\r\n' is 3 bytes that will write to STDOUT a tilde + carriage 
+  Draw tildes on all rows visable on screen (ie. cols size of 
+    terminal)
+
+  String '~\r\n' is 3 bytes that will write to STDOUT a tilde + carriage
     return + newline
 
 */
 void editorDrawRows () {
   
   int y;
-  for (y = 0; y < 24; ++y) {
+  for (y = 0; y < E.screenrows; ++y) {
 
     write(STDOUT_FILENO, "~\r\n", 3);
         
@@ -234,15 +272,23 @@ void editorProcessKeypress () {
 
 /*** init ***/
 
+void initEditor () {
+  
+  if (getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");
+  
+}
+
 int main () {
   /*
     Enable raw mode
+    then initialize fields in editorConfig struct 'E'
   
     Refer to https://pubs.opengroup.org/onlinepubs/7908799/xbd/termios.html
       'General Terminal Interface - The Single UNIX ® Specification, Version 2'
       for info on canonical and raw input modes.
   */
   enableRawMode();
+  initEditor();
   
   while (1) {
     
