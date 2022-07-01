@@ -764,7 +764,9 @@ void editorMoveCursor (int key) {
     //left
     case ARROW_LEFT:
       if (E.cx != 0) {
+
         E.cx--;
+
       } else if (E.cy > 0) { //move back a row if attempting to move past left edge of screen
         
         E.cy--;
@@ -788,15 +790,46 @@ void editorMoveCursor (int key) {
     //up
     case ARROW_UP:
       if (E.cy != 0) {
+
         E.cy--;
+
       }
       break;
     //down
     case ARROW_DOWN:
       if (E.cy < E.numrows) {
+
         E.cy++;
+
       }
       break;
+    //EOL
+    case END_KEY:
+      if (row && E.cx < row->size) {
+
+        E.cx = E.screencols - 1;
+
+      } else if (row && E.cx == row->size) { //move forward a row when cursor is past rowlen
+        
+        E.cy++;
+        E.cx = 0;
+        
+      }
+      break;
+    //start of line
+    case HOME_KEY:
+      if (E.cx != 0) {
+
+        E.cx = 0;
+
+      } else if (E.cy > 0) { //move back a row if attempting to move past left edge of screen
+        
+        E.cy--;
+        E.cx = E.row[E.cy].size;
+        
+      }
+      break;
+
   }
   
   //snap to EOL if cursor ends up past EOL
@@ -817,7 +850,7 @@ void editorMoveCursor (int key) {
 void editorProcessKeypress () {
   
   int c = editorReadKey();
-  
+ 
   switch (c) {
 
     //if input is 'ctrl + q' then exit
@@ -830,11 +863,11 @@ void editorProcessKeypress () {
     
     //home key sets cursor to start of line
     case HOME_KEY:
-      E.cx = 0;
+      editorMoveCursor(c);
       break;
 
     case END_KEY:
-      E.cx = E.screencols - 1;
+      editorMoveCursor(c);
       break;
     
     //set page up and page down logic
