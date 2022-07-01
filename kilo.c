@@ -10,6 +10,11 @@
 
 /*~~~~~~~~~~~~~~~~~~~~ includes ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+//Added for portability with getline() on some compilers
+#define _DEFAULT_SOURCE
+#define _BSD_SOURCE
+#define _GNU_SOURCE
+
 #include <asm-generic/ioctls.h>
 #include <ctype.h>
 #include <errno.h>
@@ -17,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -44,6 +50,23 @@ enum editorKey {
 /*~~~~~~~~~~~~~~~~~~~~ data ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*
+  Create struct for storing text within the editor
+
+  erow = Editor row
+  erow value is added to the global state in editorConfig, it stores a
+    line of text as a dynamically allocated char arr, as well as the 
+    length of the data
+
+  the 'numrows' variable TODO
+*/
+typedef struct erow {
+
+  int size;
+  char *chars;
+
+} erow;
+
+/*
   Create struct for original terminal flags
   https://www.man7.org/linux/man-pages/man3/termios.3.html <- termios docs
   
@@ -60,6 +83,8 @@ struct editorConfig {
   int cx, cy;
   int screenrows;
   int screencols;
+  int numrows;
+  erow row;
   struct termios orig_termios;
 
 };
@@ -350,6 +375,60 @@ int getWindowSize (int *rows, int *cols) {
 }
 
 
+/*~~~~~~~~~~~~~~~~~~~~ file I/O ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+void editorOpen(char *filename) {
+  
+  //open file in read mode
+  FILE *fp = fopen(filename, "r");
+  //exit if file fails to open
+  if (!fp) die("fopen");
+  
+  char *line = NULL;
+  size_t linecap = 0;
+  ssize_t linelen;
+  /*
+    getline() - ssize_t getline(char **restrict lineptr, size_t *restrict n,
+                       FILE *restrict stream);
+      reads an entire line from stream, storing the address
+      of the buffer containing the text into *lineptr.
+      *lineptr can contain a
+      pointer to a malloc(3)-allocated buffer *n bytes in size.
+
+  */
+  linelen = getline(&line, &linecap, fp);
+  //set linelen equal to length of file
+  if (linelen != -1) {
+    
+    while (linelen > 0 && (line[linelen - 1] == '\n' ||
+                           line[linelen - 1] == '\r' ))
+    linelen--;
+    
+  
+  
+  /*
+    Allocate enough memory for char *line and an extra null byte to signify 
+      a string assign current character in the row data struct of the terminals 
+      global state
+    
+    memcpy() = void * mempcpy (void *dest, const void *src, size_t size)
+  
+  */
+  E.row.size = linelen;
+  E.row.chars = malloc(linelen + 1);
+  memcpy(E.row.chars, line, linelen);
+  E.row.chars[linelen] = '\0';
+  //set numrows to 1 (value can be 0 or 1) to indicate line should be displayed
+  E.numrows = 1;
+  
+  }
+  //free allocated memory for row
+  //close file pointer
+  free(line);
+  fclose(fp);
+  
+}
+
 /*~~~~~~~~~~~~~~~~~~~~ append buffer ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*
@@ -415,33 +494,45 @@ void editorDrawRows (struct abuf *ab) {
   
   int y;
   for (y = 0; y < E.screenrows; ++y) {
-    if (y == 0) {
+    //check if row is part of text buffer, or a row that comes after the end 
+    //of the buffer
+    if (y >= E.numrows) {
+      //If no file/blank file opened, display welcome message
+      if (E.numrows == 0 && y == 0) {
 
-      /*
-        Initialize char arr 'welcome' and interpolate KILO_VERSION into 
-          the 'welcome' array
-      */
-      char welcome[80];
-      int welcomelen = snprintf(welcome, sizeof(welcome),
-        "Kilo editor fork by TairenFD -- version %s", KILO_VERSION);
-      //truncate string in case terminal screen size too small
-      if (welcomelen > E.screencols) welcomelen = E.screencols;
-      //center message
-      int padding = (E.screencols -welcomelen) / 2;
-      if (padding) {
+        /*
+          Initialize char arr 'welcome' and interpolate KILO_VERSION into 
+            the 'welcome' array
+        */
+        char welcome[80];
+        int welcomelen = snprintf(welcome, sizeof(welcome),
+          "Kilo editor fork by TairenFD -- version %s", KILO_VERSION);
+        //truncate string in case terminal screen size too small
+        if (welcomelen > E.screencols) welcomelen = E.screencols;
+        //center message
+        int padding = (E.screencols -welcomelen) / 2;
+        if (padding) {
         
+          abAppend(ab, "~", 1);
+          padding--;
+        
+        }
+        while (padding--) abAppend(ab, " ", 1);
+
+        abAppend(ab, welcome, welcomelen);
+
+      } else {
+    
         abAppend(ab, "~", 1);
-        padding--;
-        
+
       }
-      while (padding--) abAppend(ab, " ", 1);
-
-      abAppend(ab, welcome, welcomelen);
-
     } else {
     
-      abAppend(ab, "~", 1);
-
+      //truncate if len of text buffer in row is more than screen len
+      int len = E.row.size;
+      if (len > E.screencols) len = E.screencols;
+      abAppend(ab, E.row.chars, len);
+    
     }
     
     abAppend(ab, "\x1b[K", 3);
@@ -605,14 +696,16 @@ void editorProcessKeypress () {
 /*~~~~~~~~~~~~~~~~~~~~ init ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 void initEditor () {
+  
   E.cx = 0;
   E.cy = 0;
+  E.numrows = 0;
   
   if (getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");
   
 }
 
-int main () {
+int main (int argc, char *argv[]) {
   /*
     Enable raw mode
     then initialize fields in editorConfig struct 'E'
@@ -623,6 +716,11 @@ int main () {
   */
   enableRawMode();
   initEditor();
+  if (argc >= 2) {
+    
+    editorOpen(argv[1]);
+  
+  }
   
   while (1) {
     
