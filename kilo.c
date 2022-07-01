@@ -23,10 +23,18 @@
 /*
   Create struct for original terminal flags
   https://www.man7.org/linux/man-pages/man3/termios.3.html <- termios docs
+  
+  Create global struct for editor state that contains data for terminal 
+    width and height
+  Initilialize a config struct 'E'
 */
+struct editorConfig {
 
-struct termios orig_termios;
+  struct termios orig_termios;
 
+};
+
+struct editorConfig E;
 
 /*** terminal ***/
 
@@ -53,7 +61,7 @@ void disableRawMode () {
     if tcsetattr returns -1 which is a an error/failure then
       print error message "tcsetattr" and exit
   */
-  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios) == -1) {
+  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.orig_termios) == -1) {
     
     die("tcsetattr");
     
@@ -67,13 +75,13 @@ void enableRawMode () {
     Get user default termios and return to defaults at exit
     exit with message "tcgetattr" on failure
   */
-  if (tcgetattr(STDIN_FILENO, &orig_termios) == -1) die("tcgetattr");
+  if (tcgetattr(STDIN_FILENO, &E.orig_termios) == -1) die("tcgetattr");
   atexit(disableRawMode);
   
   /*
     Set raw termios to user defualt before adding flag changes
   */
-    struct termios raw = orig_termios;
+    struct termios raw = E.orig_termios;
   
   /*
   local flags c_lflag -
