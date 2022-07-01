@@ -30,6 +30,9 @@
 
 /*~~~~~~~~~~~~~~~~~~~~ defines ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+//set tab stop length
+#define KILO_TAB_STOP 8
+
 #define CTRL_KEY(key) ((key) & 0x1f)
 
 //define movement key characters
@@ -58,11 +61,15 @@ enum editorKey {
     line of text as a dynamically allocated char arr, as well as the 
     length of the data
 
+  render is for rendering tabs
+
 */
 typedef struct erow {
 
   int size;
+  int rsize;
   char *chars;
+  char *render;
 
 } erow;
 
@@ -75,6 +82,8 @@ typedef struct erow {
     ioctl()
 
   cx and cy are for cursors current x(horizontal/cols) and y(vertical/rows) position
+  rx is the index into the render field of the row, cx is an index into the chars field
+    if no tabs are present rx = cx, if tabs are present rx > cx
 
   numrows correlates to the number of rows in the file
 
@@ -87,6 +96,7 @@ typedef struct erow {
 struct editorConfig {
 
   int cx, cy;
+  int rx;
   int rowoff;
   int coloff;
   int screenrows;
@@ -386,6 +396,42 @@ int getWindowSize (int *rows, int *cols) {
 
 /*~~~~~~~~~~~~~~~~~~~~ row operations ~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+void editorUpdateRow (erow *row) {
+
+  //all of this essentially will copy each row into render variables so tabs can 
+  //be rendered
+  int tabs = 0;
+  int j;
+  //loop through characters in row, count tabs
+  for (j = 0; j < row->size; ++j)
+    if (row->chars[j] == '\t') tabs++;
+  
+  free(row->render);
+  //allocate size for characters in row, tab spaces, and null byte
+  row->render = malloc(row->size + tabs*(KILO_TAB_STOP - 1) + 1);
+  
+  //idx contains number of characters copied into row->render
+  int idx = 0;
+  //loop through characters in row
+  for (j = 0; j < row->size; ++j) {
+    if (row->chars[j] == '\t') {
+      //render tabs correctly
+      row->render[idx++] = ' ';
+      while (idx % KILO_TAB_STOP != 0) row->render[idx++] = ' ';
+      
+    } else {
+      
+      row->render[idx++] = row->chars[j];
+      
+    }
+    
+  }
+  
+  row->render[idx] = '\0';
+  row->rsize = idx;
+
+}
+
 void  editorAppendRow (char *s, size_t len) {
   
   //allocate more space for each row
@@ -403,6 +449,11 @@ void  editorAppendRow (char *s, size_t len) {
   E.row[at].chars = malloc(len + 1);
   memcpy(E.row[at].chars, s, len);
   E.row[at].chars[len] = '\0';
+  
+  E.row[at].rsize = 0;
+  E.row[at].render = NULL;
+  editorUpdateRow(&E.row[at]);
+  
   E.numrows++;
   
 }
@@ -584,10 +635,10 @@ void editorDrawRows (struct abuf *ab) {
     
       //truncate if len of text buffer in current row or col is more than screen len
       //if user scrolls horizontally past EOL, set len to 0 so nothing is displayed
-      int len = E.row[filerow].size - E.coloff;
+      int len = E.row[filerow].rsize - E.coloff;
       if (len < 0) len = 0;
       if (len > E.screencols) len = E.screencols;
-      abAppend(ab, &E.row[filerow].chars[E.coloff], len);
+      abAppend(ab, &E.row[filerow].render[E.coloff], len);
     
     }
     
@@ -788,6 +839,7 @@ void initEditor () {
   
   E.cx = 0;
   E.cy = 0;
+  E.rx = 0;
   E.rowoff = 0;
   E.coloff = 0;
   E.numrows = 0;
