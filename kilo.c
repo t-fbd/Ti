@@ -508,6 +508,25 @@ void  editorAppendRow (char *s, size_t len) {
   
 }
 
+void editorFreeRow (erow *row) {
+  
+  free(row->render);
+  free(row->chars);
+  
+}
+
+void editorDelRow (int at) {
+  
+  if (at < 0 || at >= E.numrows) return;
+  //free memory in current row
+  editorFreeRow(&E.row[at]);
+  //overwrite row with next row
+  memmove(&E.row[at], &E.row[at + 1], sizeof(erow) * (E.numrows - at - 1));
+  E.numrows--;
+  E.dirty++;
+  
+}
+
 //user input
 void editorRowInsertChar (erow *row, int at, int c) {
   
@@ -538,8 +557,23 @@ void editorRowInsertChar (erow *row, int at, int c) {
   E.dirty++;
   
 }
+//                          prev row     row    len of row
+void editorRowAppendString (erow *row, char *s, size_t len) {
+  
+  //realloc space for new size of row and space for null byte
+  row->chars = realloc(row->chars, row->size + len + 1);
+  //append row(s) to end of previous row(row)
+  memcpy(&row->chars[row->size], s, len);
+  //update size
+  row->size += len;
+  //add null byte at end of string
+  row->chars[row->size] = '\0';
+  editorUpdateRow(row);
+  E.dirty++;
+  
+}
 
-void editorRowDelChar(erow *row, int at) {
+void editorRowDelChar (erow *row, int at) {
   
   //if attempting to overwrite outside of row then return
   if (at < 0 || at >= row->size) return;
@@ -578,6 +612,8 @@ void editorDelChar () {
   
   //if past EOF return - nothing to remove
   if (E.cy == E.numrows) return;
+  //if at start of file aka 1:1
+  if (E.cx == 0 && E.cy == 0) return;
   
   //current row
   erow *row = &E.row[E.cy];
@@ -589,6 +625,17 @@ void editorDelChar () {
     editorRowDelChar(row, E.cx - 1);
     E.cx--;
   
+  } else { //beginning of line thats not 1:1
+    
+    //set E.cx to end of previous row
+    E.cx = E.row[E.cy - 1].size;
+    //append current row to previous row
+    editorRowAppendString( &E.row[E.cy - 1], row->chars, row->size);
+    //overwrite row with next rows to remove it - will free memory in process
+    editorDelRow(E.cy);
+    //set E.cy to appended row
+    E.cy--;
+    
   }
   
 }
@@ -718,6 +765,7 @@ void editorSave() {
         free(buf);
         //confirm if save was successful
         editorSetStatusMessage("%d bytes written to disk", len);
+        E.dirty = 0;
         return;
         
       }
