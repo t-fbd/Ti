@@ -90,6 +90,7 @@ typedef struct erow {
   rowoff (row offset) correlates to the current row of the file the user is scrolled to
   coloff (column offset) correlates to the current column of the file the user is scrolled to
   
+  filename correlates to the name of the file currently being edited
 
   Initilialize a global config struct 'E'
 */
@@ -104,6 +105,7 @@ struct editorConfig {
   int numrows;
   //create array of 'row' erow structs
   erow *row;
+  char *filename;
   struct termios orig_termios;
 
 };
@@ -485,6 +487,11 @@ void  editorAppendRow (char *s, size_t len) {
 
 void editorOpen(char *filename) {
   
+  //free filename before assigning value, strdup() will return a pointer to a 
+  //new string which is a duplicate pointed to by filename
+  free(E.filename);
+  E.filename = strdup(filename);
+  
   //open file in read mode
   FILE *fp = fopen(filename, "r");
   //exit if file fails to open
@@ -683,6 +690,66 @@ void editorDrawRows (struct abuf *ab) {
 }
 
 /*
+  ESC[7m sequence will invert colors, ESC[m returns normal formatting
+
+  status bar will be inverted from rest of editor
+*/
+void editorDrawStatusBar (struct abuf *ab) {
+  
+  abAppend(ab, "\x1b[7m", 4);
+
+  /*
+    snprintf Parameters:
+  
+  *str : is a buffer.
+
+  size : is the maximum number of bytes (characters) that will be written to 
+    the buffer.
+
+  format : C string that contains a format string that follows the same 
+    specifications as format in printf
+
+  … : the optional ( …) arguments are just the string formats like (“%d”, myint)
+     as seen in printf.
+
+  */
+  //print filename if it exists to status bar, otherwise print [SCRATCH]
+  //print line count of file to status bar
+  char status[80], rstatus[80];
+
+  int len = snprintf(status, sizeof(status), "%.20s - %d lines",
+    E.filename ? E.filename : "[SCRATCH]", E.numrows);
+  
+  //current line/total line count, E.cy is switched from 0-indexed to 1-indexed 
+  //for term
+  int rlen = snprintf(rstatus, sizeof(rstatus), "%d/%d", 
+    (E.cy + 1 <= E.numrows) ? E.cy + 1 : E.numrows, E.numrows);
+
+  if (len > E.screencols) len = E.screencols;
+
+  abAppend(ab, status, len);
+  
+  while (len < E.screencols) {
+    
+    if (E.screencols - len == rlen){
+      
+      abAppend(ab, rstatus, rlen);
+      break;
+      
+    } else {
+    
+      abAppend(ab, " ", 1);
+      len++;
+
+    }
+      
+  }
+  
+  abAppend(ab, "\x1b[m", 3);
+  
+}
+
+/*
   \x1b = ESC character / ASCII dec = '27'
   
   terminal escape sequences always start with ESC followed by a '[' char
@@ -722,7 +789,10 @@ void editorRefreshScreen() {
   abAppend(&ab, "\x1b[H", 3);
   
   //pass 'ab' into editorDrawRows to draw tildes on blank lines
+  //pass 'ab' into editorDrawStatusBar to draw status bar after 
+  //all other rows have been rendered
   editorDrawRows(&ab);
+  editorDrawStatusBar(&ab);
   
   /*
     Reposition cursor after drawing tildes, set cursor postion to current value
@@ -906,6 +976,7 @@ void initEditor () {
   E.coloff = 0;
   E.numrows = 0;
   E.row = NULL;
+  E.filename = NULL;
   
   if (getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");
   //keep a line free at bottom of screen for status bar
