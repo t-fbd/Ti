@@ -72,16 +72,22 @@ typedef struct erow {
   https://www.man7.org/linux/man-pages/man3/termios.3.html <- termios docs
   
   Create global struct for editor state that contains data for terminal 
-    width and height, this is gathered by getWindowSize function using 
+    width(screencols) and height(screenrows), this is gathered by getWindowSize function using 
     ioctl()
 
   cx and cy are for cursors current x(horizontal/cols) and y(vertical/rows) position
+
+  numrows correlates to the number of rows in the file
+
+  rowoff correlates to the current row of the file the user is scrolled to
+  
 
   Initilialize a config struct 'E'
 */
 struct editorConfig {
 
   int cx, cy;
+  int rowoff;
   int screenrows;
   int screencols;
   int numrows;
@@ -488,6 +494,27 @@ void abFree(struct abuf *ab) {
 /*~~~~~~~~~~~~~~~~~~~~ output ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*
+  Check if cursor has moved outside visible window while scrolling, adjust E.rowoff 
+    accordingly
+*/
+void editorScroll () {
+  //check if cursor is above visible window, if so scroll to cursor location
+  if (E.cy < E.rowoff) {
+
+    E.rowoff = E.cy;
+
+  }
+  //same as previous if statement but for bottom of screen, but not past bottom of
+  //file - refer ro editorMoveCursor() ARROW_DOWN
+  if (E.cy >= E.rowoff + E.screenrows) {
+    
+    E.rowoff = E.cy - E.screenrows + 1;
+    
+  }
+  
+}
+
+/*
   Draw tildes on all rows visable on screen (ie. cols size of 
     terminal)
 
@@ -504,9 +531,11 @@ void editorDrawRows (struct abuf *ab) {
   
   int y;
   for (y = 0; y < E.screenrows; ++y) {
+    //set current row
+    int filerow = y + E.rowoff;
     //check if row is part of text buffer, or a row that comes after the end 
     //of the buffer
-    if (y >= E.numrows) {
+    if (filerow >= E.numrows) {
       //If no file/blank file opened, display welcome message
       if (E.numrows == 0 && y == 0) {
 
@@ -540,9 +569,9 @@ void editorDrawRows (struct abuf *ab) {
     } else {
     
       //truncate if len of text buffer in current row is more than screen len
-      int len = E.row[y].size;
+      int len = E.row[filerow].size;
       if (len > E.screencols) len = E.screencols;
-      abAppend(ab, E.row[y].chars, len);
+      abAppend(ab, E.row[filerow].chars, len);
     
     }
     
@@ -585,6 +614,8 @@ void editorDrawRows (struct abuf *ab) {
   VT100 escape sequences will mostly be used within this editor
 */
 void editorRefreshScreen() {
+  
+  editorScroll();
   
   //initialize an abuf struct 'ab' by assigning ABUF_INIT to it - which is 
   //a null pointer and a length of 0
@@ -642,7 +673,7 @@ void editorMoveCursor (int key) {
       break;
     //down
     case ARROW_DOWN:
-      if (E.cy != E.screenrows - 1) {
+      if (E.cy < E.numrows) {
         E.cy++;
       }
       break;
@@ -710,6 +741,7 @@ void initEditor () {
   
   E.cx = 0;
   E.cy = 0;
+  E.rowoff = 0;
   E.numrows = 0;
   E.row = NULL;
   
