@@ -468,24 +468,34 @@ void editorRefreshScreen() {
 
 void editorMoveCursor (int key) {
   
+  //change cursor position, if out-of-bounds of terminal screen then
+  //dont do anything
   switch (key) {
     
     //left
     case ARROW_LEFT:
-      E.cx--;
+      if (E.cx != 0) {
+        E.cx--;
+      }
       break;
     //right
     case ARROW_RIGHT:
-      E.cx++;
+      if (E.cx != E.screencols - 1) {
+        E.cx++;
+      }
       break;
     //up
     case ARROW_UP:
-      E.cy--;
+      if (E.cy != 0) {
+        E.cy--;
+      }
       break;
     //down
     case ARROW_DOWN:
-      E.cy++;
-    
+      if (E.cy != E.screenrows - 1) {
+        E.cy++;
+      }
+      break;
   }
   
 }
