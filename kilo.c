@@ -23,6 +23,16 @@
 
 #define CTRL_KEY(key) ((key) & 0x1f)
 
+//define movement key characters
+enum editorKey {
+  
+  ARROW_LEFT = 1000,
+  ARROW_RIGHT,
+  ARROW_UP,
+  ARROW_DOWN
+  
+};
+
 /*** data ***/
 
 /*
@@ -33,10 +43,13 @@
     width and height, this is gathered by getWindowSize function using 
     ioctl()
 
+  cx and cy are for cursors current x(horizontal/cols) and y(vertical/rows) position
+
   Initilialize a config struct 'E'
 */
 struct editorConfig {
 
+  int cx, cy;
   int screenrows;
   int screencols;
   struct termios orig_termios;
@@ -144,7 +157,7 @@ void enableRawMode () {
 /*
   Waits for one keypress and returns it
 */
-char editorReadKey () {
+int editorReadKey () {
   /*
     Initialize char c to use as a buffer
   */  
@@ -164,8 +177,39 @@ char editorReadKey () {
     if (nread == -1 && errno != EAGAIN) die("read");
   }
   
-  return c;
+  /*
+    Check for ESC, if no input after ESC assume just ESC was intended to be 
+      pressed, otherwise check if additional inputs match to arrow keys, if
+      so move accordingly by returning corresponding key for movement
+  */
+  if (c == '\x1b') {
+    
+    char seq[3];
+    
+    if (read(STDIN_FILENO, &seq[0], 1) != 1) return '\x1b';
+    if (read(STDIN_FILENO, &seq[1], 1) != 1) return '\x1b';
+    
+    if (seq[0] == '[') {
+      
+      switch (seq[1]) {
+        
+        case 'A': return ARROW_UP;
+        case 'B': return ARROW_DOWN;
+        case 'C': return ARROW_RIGHT;
+        case 'D': return ARROW_LEFT;
+                
+      }
+      
+    }
+    
+    return '\x1b';
+    
+  } else {
+  
+    return c;
 
+  }
+  
 }
 
 /*
@@ -314,7 +358,7 @@ void abFree(struct abuf *ab) {
   String '~\r\n' is 3 bytes that will write to STDOUT a tilde + carriage
     return + newline, if last line is reached then make an exception
 
-  ESC sequence 'K' - 'Erase In Line', analogous to 'J' command, except it
+  ESC sequence 'ARROW_UP' - 'Erase In Line', analogous to 'ARROW_DOWN' command, except it
     applies to the current line instead of the entire screen
 
   refer to https://vt100.net/docs/vt100-ug/chapter3.html#EL
@@ -324,7 +368,7 @@ void editorDrawRows (struct abuf *ab) {
   
   int y;
   for (y = 0; y < E.screenrows; ++y) {
-    if (y == E.screenrows / 3) {
+    if (y == 0) {
 
       /*
         Initialize char arr 'welcome' and interpolate KILO_VERSION into 
@@ -335,6 +379,15 @@ void editorDrawRows (struct abuf *ab) {
         "Kilo editor fork by TairenFD -- version %s", KILO_VERSION);
       //truncate string in case terminal screen size too small
       if (welcomelen > E.screencols) welcomelen = E.screencols;
+      //center message
+      int padding = (E.screencols -welcomelen) / 2;
+      if (padding) {
+        
+        abAppend(ab, "~", 1);
+        padding--;
+        
+      }
+      while (padding--) abAppend(ab, " ", 1);
 
       abAppend(ab, welcome, welcomelen);
 
@@ -359,16 +412,16 @@ void editorDrawRows (struct abuf *ab) {
   \x1b = ESC character / ASCII dec = '27'
   
   terminal escape sequences always start with ESC followed by a '[' char
-  the 'J' command - the 'J' command is for 'Erase In Display' / clear screen
+  the 'ARROW_DOWN' command - the 'ARROW_DOWN' command is for 'Erase In Display' / clear screen
     and the parameter of 2 is to clear the entire screen, this is replaced
-    with the 'K' to avoid clearing all lines and redrawing after each refresh
+    with the 'ARROW_UP' to avoid clearing all lines and redrawing after each refresh
 
   the H command is for cursor position - can take two arguments of row and 
     column number, for example /x1b[12;40H would center the cursor in the 
     center of the screen on a 80x24 size terminal. The default arguments 
     for H are (1;1). Rows and columns start at 1, not 0.
   
-  the 'h' and 'l' commands are for 'Set Mode' and 'Reset Mode', these are 
+  the 'ARROW_LEFT' and 'ARROW_RIGHT' commands are for 'Set Mode' and 'Reset Mode', these are 
     used to turn on and off features/modes of the terminal. argument ?25
     is for hiding/showing the cursor. Not all terminals will support this
     , if thats the case - the sequence will simply be ignored.
@@ -395,8 +448,15 @@ void editorRefreshScreen() {
   //pass 'ab' into editorDrawRows to draw tildes on blank lines
   editorDrawRows(&ab);
   
-  //reposition cursor after drawing tildes
-  abAppend(&ab, "\x1b[H", 3);
+  /*
+    Reposition cursor after drawing tildes, set cursor postion to current value
+      of E.cx and E.cy - value of 1 is added to change from 0-indexed to 1-
+      indexed values due to terminal using 1-indexed values
+  */
+  char buf[32];
+  snprintf(buf, sizeof(buf), "\x1b[%d;%dH", E.cy + 1, E.cx + 1);
+  abAppend(&ab, buf, strlen(buf));
+  
   abAppend(&ab, "\x1b[?25h", 6);
   
   //write buffer contents to STDOUT and free allocated memory
@@ -406,13 +466,37 @@ void editorRefreshScreen() {
 
 /*** input ***/
 
+void editorMoveCursor (int key) {
+  
+  switch (key) {
+    
+    //left
+    case ARROW_LEFT:
+      E.cx--;
+      break;
+    //right
+    case ARROW_RIGHT:
+      E.cx++;
+      break;
+    //up
+    case ARROW_UP:
+      E.cy--;
+      break;
+    //down
+    case ARROW_DOWN:
+      E.cy++;
+    
+  }
+  
+}
+
 /*
   Waits for a keypress and handles it - deals with mapping keys to editor 
     functions at a higher level
 */
 void editorProcessKeypress () {
   
-  char c = editorReadKey();
+  int c = editorReadKey();
   
   switch (c) {
 
@@ -424,6 +508,14 @@ void editorProcessKeypress () {
       exit(0);
       break;
     
+    //send to editorMoveCursor()
+    case ARROW_LEFT:
+    case ARROW_DOWN:
+    case ARROW_UP:
+    case ARROW_RIGHT:
+      editorMoveCursor(c);
+      break;
+    
   }
   
 }
@@ -431,6 +523,8 @@ void editorProcessKeypress () {
 /*** init ***/
 
 void initEditor () {
+  E.cx = 0;
+  E.cy = 0;
   
   if (getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");
   
