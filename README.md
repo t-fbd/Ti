@@ -37,9 +37,23 @@ See 'BYOE' documents [here](https://viewsourcecode.org/snaptoken/kilo/02.enterin
 - **d** : delete character under cursor
 - **D** : delete current row
 
+- **:** : open editor command line
+    - 'save' - Save file
+    - 'quit' - Quit, will prompt if unsaved changes
+    - 'help' - Help menu, currently just directs user to README
+
 ### Type mode
 
 - All general keybindings should work, as well as normal typing to screen
+
+TODO
+====
+
+1) Improve help command to display more useful information
+2) Add user flag options
+3) Man pages
+4) ...
+
 
 Contributers
 =============
