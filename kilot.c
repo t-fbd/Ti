@@ -1,8 +1,7 @@
 /*
   Author: Tairen Dunham
   Date: June 30, 2022
-  Description: 'Build Your Own Text Editor' by snaptoken, inspired by antirez's 'Kilo'
-                editor.
+  Description: Fork of antirez's 'Kilo' text editor.
 */
 
 #define KILO_VERSION "0.0.1"
@@ -54,7 +53,10 @@ enum editorKey {
   HOME_KEY,
   END_KEY,
   PAGE_UP,
-  PAGE_DOWN
+  PAGE_DOWN,
+  //TODO
+  WORD_NEXT,
+  WORD_LAST
   
 };
 
@@ -119,6 +121,7 @@ struct editorConfig {
   //create array of 'row' erow structs
   erow *row;
   int dirty;
+  int modal;
   char *filename;
   char statusmsg[80];
   time_t statusmsg_time;
@@ -1170,7 +1173,30 @@ void editorMoveCursor (int key) {
         E.cx = 0;
         
       }
+
       break;
+
+    case WORD_NEXT:
+      if (row && E.cx < row->size) {
+        while (row && E.cx < row->size && row->render[E.cx] != ' ' && 
+          row->render[E.cx] != '\t') 
+        {
+
+          E.cx++;
+
+        }
+        while (row && E.cx < row->size && row->render[E.rx] == ' ' && 
+          row->render[E.rx] == '\t') 
+        {
+
+          E.cx++;
+
+        }
+        
+      }
+     
+      break;
+        
     //up
     case ARROW_UP:
       if (E.cy != 0) {
@@ -1317,13 +1343,53 @@ void editorProcessKeypress () {
     case CTRL_KEY('l'):
     //ESC key is ignored due to many EDC sequences that arent being handled like F1-F12
     case '\x1b':
+      if (E.modal) {
+        
+        E.modal = 0;
+        editorSetStatusMessage("EDIT MODE"); 
+        
+      } else {
+        
+        E.modal++;
+        editorSetStatusMessage("MOVEMENT MODE");
+      
+      }
+      
       break;
     
-    //if no movement or command, then print character to screen
+    //if edit mode or command, then print character to screen
     default:
-      editorInsertChar(c);
-      break;
-    
+      if (E.modal) {
+        switch (c){
+          
+          case 'h':
+            editorMoveCursor(ARROW_LEFT);
+            break;
+          case 'l':
+            editorMoveCursor(ARROW_RIGHT);
+            break;
+          case 'j':
+            editorMoveCursor(ARROW_DOWN);
+            break;
+          case 'k':
+            editorMoveCursor(ARROW_UP);
+            break;
+          case 'w':
+            editorMoveCursor(WORD_NEXT);
+            break;
+          case 'd':
+            editorMoveCursor(ARROW_RIGHT);
+            editorDelChar();
+            break;
+          
+        }
+      } else {
+        
+        editorInsertChar(c);
+        break;
+
+      }
+
   }
   
   if (quit_times == 0) editorSetStatusMessage("");
@@ -1345,6 +1411,7 @@ void initEditor () {
   E.numrows = 0;
   E.row = NULL;
   E.dirty = 0;
+  E.modal = 1;
   E.filename = NULL;
   E.statusmsg[0] = '\0';
   E.statusmsg_time = 0;
