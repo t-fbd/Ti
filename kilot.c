@@ -135,6 +135,8 @@ struct editorConfig E;
 /*~~~~~~~~~~~~~~~~~~~~ function prototypes ~~~~~~~~~~~~~~~~~~~*/
 
 void editorSetStatusMessage(const char *fmt, ...);
+void editorRefreshScreen();
+char *editorPrompt(char *prompt);
 
 /*~~~~~~~~~~~~~~~~~~~~ terminal ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -756,8 +758,17 @@ void editorOpen(char *filename) {
 //write return value of editorRowsToString() to file
 void editorSave() {
   
-  //TODO - currently wont save if filename doesnt already exist
-  if (E.filename == NULL) return;
+  if (E.filename == NULL) {
+    
+    E.filename = editorPrompt("Save as: %s (ESC to cancel)");
+    if (E.filename == NULL) {
+      
+      editorSetStatusMessage("Save aborted");
+      return;
+      
+    }
+    
+  }
   
   int len;
   char *buf = editorRowsToString(&len);
@@ -1153,6 +1164,74 @@ void editorSetStatusMessage (const char *fmt, ...) {
 
 
 /*~~~~~~~~~~~~~~~~~~~~ input ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+char *editorPrompt (char *prompt) {
+  
+  //init buf with size of 128 to ensure in range of char
+  size_t bufsize = 128;
+  char *buf = malloc(bufsize);
+  
+  //init empty string
+  size_t buflen = 0;
+  buf[0] = '\0';
+  
+  while(1) {
+    
+    //take prompt and set it as status message, add null byte to 
+    //end to signify string
+    editorSetStatusMessage(prompt, buf);
+    editorRefreshScreen();
+    
+    //read keyboard input
+    int c = editorReadKey();
+    //allow backspacing and del in prompt
+    if (c == DEL_KEY || c == CTRL_KEY('h') || c == BACKSPACE) {
+      
+      if (buflen != 0) buf[--buflen] = '\0';
+      
+    }
+    //leave with ESC or ENTER with empty input
+    else if (c == '\x1b') {
+      
+      editorSetStatusMessage("");
+      free(buf);
+      return NULL;
+      
+    }
+    //when user presses enter check for input
+    else if (c == '\r') {
+      
+      if (buflen != 0) {
+        
+        //reset status message
+        editorSetStatusMessage("");
+        //return user input from prompt
+        return buf;
+        
+      }
+      
+      return NULL;
+      
+    }
+    //if user has yet to press enter, a ctrl sequence and is inputting a char,
+    //append it to buf
+    else if (!iscntrl(c) && c < 128 ) {
+        
+      if (buflen == bufsize - 1) {
+        
+        bufsize *= 2;
+        buf = realloc(buf, bufsize);
+        
+      }    
+      
+      buf[buflen++] = c;
+      buf[buflen] = '\0';
+        
+    }
+      
+  }
+  
+}
 
 void editorMoveCursor (int key) {
   
