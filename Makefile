@@ -2,7 +2,7 @@ CC = gcc
 
 CFLAGS = -Wall -Wextra -pedantic -std=c99
 
-TARGET = kilot
+TARGET = ti
 
 all: $(TARGET)
 

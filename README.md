@@ -1,4 +1,4 @@
-KiloT - 'Build your own editor' fork of Kilo by Antirez
+Ti - A Kilo inspired, Vi like editor  
 ====================================
 
 This is solely being used as a learning tool. If you notice anything 
@@ -8,8 +8,10 @@ learning process.
 
 See original kilo source code at [github/antirez](https://github.com/antirez/kilo "Kilo Text Editor")
 
-See 'BYOE' documents [here](https://viewsourcecode.org/snaptoken/kilo/02.enteringRawMode.html "Build Your Own Editor")
+See [Paige Ruten's](https://github.com/paigeruten "paigeruten") 'BYOE' documents [here](https://viewsourcecode.org/snaptoken/kilo/02.enteringRawMode.html "Build Your Own Editor")
 
+Anything to do with modal operations and commands were implemented by me. Several improvements were made to much of the 
+keyboard operations in regard to UX. I'll have diff files posted as well as cloc diff data for this and kilo posted soon.
 
 # Keybinds
 
@@ -56,8 +58,9 @@ TODO
 2) ...
 
 
-Contributers
-=============
+Contributers / Credit To
+========================
 
-- github.com/tairenfd
-- github.com/antirez
+- tairenfd
+- antirez
+- paigeruten

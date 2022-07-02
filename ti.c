@@ -1,10 +1,17 @@
 /*
-  Author: Tairen Dunham
+
+  Author: Tairen Dunham <tairenfd at mailbox dot org>
   Date: June 30, 2022
-  Description: Fork of antirez's 'Kilo' text editor.
+  Description: Ti is a significantly modified fork of antirez's 'Kilo' text 
+               editor / Paige Ruten's Kilo tutorial. It's largely inspired 
+               by features found in the text editor Vim, but my name is not
+               Tim, so I opted for Ti
+
 */
 
-#define KILO_VERSION "0.0.1"
+/*~~~~~~~~~~~~~~~~~~~~ version ~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+#define TI_VERSION "0.0.1"
 
 
 /*~~~~~~~~~~~~~~~~~~~~ includes ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -33,9 +40,9 @@
 /*~~~~~~~~~~~~~~~~~~~~ defines ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 //set tab stop length
-#define KILO_TAB_STOP 8
+#define TI_TAB_STOP 8
 //set quit confimations
-#define KILO_QUIT_TIMES 1
+#define TI_QUIT_TIMES 1
 
 #define CTRL_KEY(key) ((key) & 0x1f)
 
@@ -55,7 +62,7 @@ enum editorKey {
   PAGE_UP,
   PAGE_DOWN,
   WORD_NEXT,
-  //TODO
+  //TODO fix WORD_LAST
   WORD_LAST
   
 };
@@ -438,7 +445,7 @@ int editorRowCxToRx (erow *row, int cx) {
     
     if (row->chars[j] == '\t')
       //    columns left of tab , columns right of last tab
-      rx += (KILO_TAB_STOP - 1) - (rx % KILO_TAB_STOP);
+      rx += (TI_TAB_STOP - 1) - (rx % TI_TAB_STOP);
     //goto next tab stop
     rx++;
     
@@ -461,7 +468,7 @@ void editorUpdateRow (erow *row) {
   
   free(row->render);
   //allocate size for characters in row, tab spaces, and null byte
-  row->render = malloc(row->size + tabs*(KILO_TAB_STOP - 1) + 1);
+  row->render = malloc(row->size + tabs*(TI_TAB_STOP - 1) + 1);
   
   //idx contains number of characters copied into row->render
   int idx = 0;
@@ -470,7 +477,7 @@ void editorUpdateRow (erow *row) {
     if (row->chars[j] == '\t') {
       //render tabs correctly
       row->render[idx++] = ' ';
-      while (idx % KILO_TAB_STOP != 0) row->render[idx++] = ' ';
+      while (idx % TI_TAB_STOP != 0) row->render[idx++] = ' ';
       
     } else {
       
@@ -942,12 +949,12 @@ void editorDrawRows (struct abuf *ab) {
       if (E.numrows == 0 && y == 0) {
 
         /*
-          Initialize char arr 'welcome' and interpolate KILO_VERSION into 
+          Initialize char arr 'welcome' and interpolate TI_VERSION into 
             the 'welcome' array
         */
         char welcome[80];
         int welcomelen = snprintf(welcome, sizeof(welcome),
-          "KiloT -- version %s", KILO_VERSION);
+          "Ti -- version %s", TI_VERSION);
         //truncate string in case terminal screen size too small
         if (welcomelen > E.screencols) welcomelen = E.screencols;
         //center message
@@ -1274,14 +1281,14 @@ void editorMoveCursor (int key) {
     case WORD_NEXT:
       if (row && E.cx < row->size) {
         while (row && E.cx < row->size && row->render[E.cx] != ' ' && 
-          row->render[E.cx] != KILO_TAB_STOP) 
+          row->render[E.cx] != TI_TAB_STOP) 
         {
 
           E.cx++;
 
         }
         while ((row && E.cx < row->size && row->render[E.cx] == ' ') || 
-               (row && E.cx < row->size && row->render[E.cx] == KILO_TAB_STOP)) 
+               (row && E.cx < row->size && row->render[E.cx] == TI_TAB_STOP)) 
         {
 
           E.cx++;
@@ -1300,14 +1307,14 @@ void editorMoveCursor (int key) {
   case WORD_LAST:
       if (E.cx != 0) {
         while (E.cx != 0 && row->render[E.cx] != ' ' && 
-          row->render[E.cx] != KILO_TAB_STOP) 
+          row->render[E.cx] != TI_TAB_STOP) 
         {
 
           E.cx--;
 
         }
         while ((E.cx != 0 && row->render[E.cx] == ' ') || 
-               (E.cx != 0 && row->render[E.cx] == KILO_TAB_STOP)) 
+               (E.cx != 0 && row->render[E.cx] == TI_TAB_STOP)) 
         {
 
           E.cx--;
@@ -1397,7 +1404,7 @@ void editorExit () {
 
 void editorProcessKeypress () {
   
-  static int quit_times = KILO_QUIT_TIMES;
+  static int quit_times = TI_QUIT_TIMES;
   
   int c = editorReadKey();
  
@@ -1582,7 +1589,7 @@ void editorProcessKeypress () {
   }
   
   if (quit_times == 0) editorSetStatusMessage("");
-  quit_times = KILO_QUIT_TIMES;
+  quit_times = TI_QUIT_TIMES;
   
 }
 
