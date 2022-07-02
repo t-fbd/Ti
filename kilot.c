@@ -54,8 +54,8 @@ enum editorKey {
   END_KEY,
   PAGE_UP,
   PAGE_DOWN,
-  //TODO
   WORD_NEXT,
+  //TODO
   WORD_LAST
   
 };
@@ -1180,19 +1180,24 @@ void editorMoveCursor (int key) {
     case WORD_NEXT:
       if (row && E.cx < row->size) {
         while (row && E.cx < row->size && row->render[E.cx] != ' ' && 
-          row->render[E.cx] != '\t') 
+          row->render[E.cx] != KILO_TAB_STOP) 
         {
 
           E.cx++;
 
         }
-        while (row && E.cx < row->size && row->render[E.rx] == ' ' && 
-          row->render[E.rx] == '\t') 
+        while ((row && E.cx < row->size && row->render[E.cx] == ' ') || 
+               (row && E.cx < row->size && row->render[E.cx] == KILO_TAB_STOP)) 
         {
 
           E.cx++;
 
         }
+
+      } else if (row && E.cx == row->size) {
+        
+        E.cy++;
+        E.cx = 0;
         
       }
      
