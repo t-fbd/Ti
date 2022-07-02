@@ -19,7 +19,8 @@ See 'BYOE' documents [here](https://viewsourcecode.org/snaptoken/kilo/02.enterin
 
 - **Ctrl + s** : Save file
 
-- **ESC** : Change mode, current modes are 'Movement' and 'Type'
+- **ESC** : Enter *Normal mode*
+- **i** : Enter *Insert mode*
 
 - **HOME** : Go to start of row, if already at start, go to previous row
 - **END** : Go to end of row, if already at end, go to next row
@@ -27,7 +28,7 @@ See 'BYOE' documents [here](https://viewsourcecode.org/snaptoken/kilo/02.enterin
 - **Page Up** : Go up one page
 - **Page Down** : Go down one page
 
-### Movement mode
+### Normal mode
 
 - **h, j, k, l** : left, down, up, right movement keys
 
@@ -38,21 +39,21 @@ See 'BYOE' documents [here](https://viewsourcecode.org/snaptoken/kilo/02.enterin
 - **D** : delete current row
 
 - **:** : open editor command line
-    - 'save' - Save file
-    - 'quit' - Quit, will prompt if unsaved changes
-    - 'help' - Help menu, currently just directs user to README
+    - 'w' or 'write' - Save file
+    - 'q' or 'quit' - Quit, will prompt if unsaved changes
+    - '!q' or '!quit' - Force quit
+    - 'wq' or 'done' - Save and quit
+    - 'h' or 'help' - Help menu, currently just directs user to README
 
-### Type mode
+### Insert mode
 
 - All general keybindings should work, as well as normal typing to screen
 
 TODO
 ====
 
-1) Improve help command to display more useful information
-2) Add user flag options
-3) Man pages
-4) ...
+1) Improve everything
+2) ...
 
 
 Contributers

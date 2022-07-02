@@ -1475,15 +1475,10 @@ void editorProcessKeypress () {
     case CTRL_KEY('l'):
     //ESC key is ignored due to many EDC sequences that arent being handled like F1-F12
     case '\x1b':
-      if (E.modal) {
+      if (!E.modal) {
         
-        E.modal = 0;
-        editorSetStatusMessage("TYPE MODE"); 
-        
-      } else {
-        
-        E.modal++;
-        editorSetStatusMessage("MOVEMENT MODE");
+        E.modal = 1;
+        editorSetStatusMessage("NORMAL MODE");
       
       }
       
@@ -1496,6 +1491,10 @@ void editorProcessKeypress () {
         char *command = malloc(sizeof(tmp));
         switch (c){
           
+          case 'i':
+            E.modal = 0;
+            editorSetStatusMessage("INSERT MODE");
+            break;
           case 'h':
             editorMoveCursor(ARROW_LEFT);
             break;
@@ -1530,7 +1529,7 @@ void editorProcessKeypress () {
             
             //commands
             if (command == NULL) break;
-            if (!strcmp(command, "quit")) {
+            if (!strcmp(command, "q") || !strcmp(command, "quit")) {
 
               if (E.dirty) {
 
@@ -1544,14 +1543,25 @@ void editorProcessKeypress () {
 
               break;
 
-            } else if (!strcmp(command, "save")) {
+            } else if (!strcmp(command, "!q") || !strcmp(command, "!quit")) {
+              
+              editorExit();
+              break;
+              
+            } else if (!strcmp(command, "w") || !strcmp(command, "write")) {
 
               editorSave();
               break;
 
-            } else if (!strcmp(command, "help")) {
+            } else if (!strcmp(command, "help") || !strcmp(command, "h")) {
 
               editorSetStatusMessage("view README.md for keybinds");
+              break;
+
+            } else if (!strcmp(command, "wq") || !strcmp(command, "done")) {
+              
+              editorSave();
+              editorExit();
               break;
 
             }
