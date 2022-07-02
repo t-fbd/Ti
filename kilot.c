@@ -1385,6 +1385,16 @@ void editorMoveCursor (int key) {
   Waits for a keypress and handles it - deals with mapping keys to editor 
     functions at a higher level
 */
+
+void editorExit () {
+  
+  write(STDOUT_FILENO, "\x1b[2J", 4);
+  write(STDOUT_FILENO, "\x1b[H", 3);
+  exit(0);
+  return;
+  
+}
+
 void editorProcessKeypress () {
   
   static int quit_times = KILO_QUIT_TIMES;
@@ -1396,9 +1406,7 @@ void editorProcessKeypress () {
     //if input is ENTER
     case '\r':
       if (quit_times == 0) {
-        write(STDOUT_FILENO, "\x1b[2J", 4);
-        write(STDOUT_FILENO, "\x1b[H", 3);
-        exit(0);
+        editorExit();
         break;
       }
       editorInsertNewline();
@@ -1414,9 +1422,7 @@ void editorProcessKeypress () {
         return;
         
       }
-      write(STDOUT_FILENO, "\x1b[2J", 4);
-      write(STDOUT_FILENO, "\x1b[H", 3);
-      exit(0);
+      editorExit();
       break;
     
     case CTRL_KEY('s'):
@@ -1486,6 +1492,8 @@ void editorProcessKeypress () {
     //if edit mode or command, then print character to screen
     default:
       if (E.modal) {
+        char *tmp;
+        char *command = malloc(sizeof(tmp));
         switch (c){
           
           case 'h':
@@ -1513,8 +1521,47 @@ void editorProcessKeypress () {
           case 'D':
             editorDelRow(E.cy);
             break;
+          //command line
+          case ':':
+            tmp = editorPrompt("command: %s");
+            command = realloc(command, sizeof(tmp));
+            command = tmp;
+            tmp = NULL;
+            
+            //commands
+            if (command == NULL) break;
+            if (!strcmp(command, "quit")) {
+
+              if (E.dirty) {
+
+                editorSetStatusMessage("!UNSAVED CHANGES! Press <ENTER> to confirm, ANY other key to cancel");
+                if (quit_times) quit_times--;
+                return;
+
+              }
+              
+              editorExit();
+
+              break;
+
+            } else if (!strcmp(command, "save")) {
+
+              editorSave();
+              break;
+
+            } else if (!strcmp(command, "help")) {
+
+              editorSetStatusMessage("view README.md for keybinds");
+              break;
+
+            }
+
+            break;
           
         }
+        
+        free(command);
+        
       } else {
         
         editorInsertChar(c);
@@ -1571,7 +1618,7 @@ int main (int argc, char *argv[]) {
   
   }
   
-  editorSetStatusMessage("<C-q> = Quit  |  <C-s> = Save");
+  editorSetStatusMessage("<C-q> = Quit  |  <C-s> = Save | ESC = Mode");
   
   while (1) {
     
