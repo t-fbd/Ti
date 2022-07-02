@@ -1010,8 +1010,9 @@ void editorDrawStatusBar (struct abuf *ab) {
   
   //current line/total line count, E.cy is switched from 0-indexed to 1-indexed 
   //for term
-  int rlen = snprintf(rstatus, sizeof(rstatus), "L %d:%d", 
-    E.cy + 1, E.cx + 1);
+  float perc = ((float)E.cy + 1.0)/((float)E.numrows) * 100;
+  int rlen = snprintf(rstatus, sizeof(rstatus), "L %d:%d %.0f%%", 
+    E.cy + 1, E.cx + 1, perc);
 
   if (len > E.screencols) len = E.screencols;
 
