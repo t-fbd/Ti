@@ -29,13 +29,13 @@ See 'BYOE' documents [here](https://viewsourcecode.org/snaptoken/kilo/02.enterin
 
 ### Movement mode
 
--**h, j, k, l** : left, down, up, right movement keys
+- **h, j, k, l** : left, down, up, right movement keys
 
--**w** : next word
--**W** : previous word
+- **w** : next word
+- **W** : previous word
 
--**d** : delete character under cursor
--**D** : delete current row
+- **d** : delete character under cursor
+- **D** : delete current row
 
 ### Type mode
 
