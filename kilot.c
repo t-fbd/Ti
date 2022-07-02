@@ -940,7 +940,7 @@ void editorDrawRows (struct abuf *ab) {
         //truncate string in case terminal screen size too small
         if (welcomelen > E.screencols) welcomelen = E.screencols;
         //center message
-        int padding = (E.screencols -welcomelen) / 2;
+        int padding = (E.screencols - welcomelen) / 2;
         if (padding) {
         
           abAppend(ab, "~", 1);
@@ -1008,11 +1008,26 @@ void editorDrawStatusBar (struct abuf *ab) {
   int len = snprintf(status, sizeof(status), "%.20s - %d Lines %s",
     E.filename ? E.filename : "[SCRATCH]", E.numrows, E.dirty ? "(+)" : "");
   
-  //current line/total line count, E.cy is switched from 0-indexed to 1-indexed 
-  //for term
-  float perc = ((float)E.cy + 1.0)/((float)E.numrows) * 100;
-  int rlen = snprintf(rstatus, sizeof(rstatus), "L %d:%d %.0f%%", 
-    E.cy + 1, E.cx + 1, perc);
+  //start of logic to detect if user at EOF or not, if so print "EOF" to status
+  //if not continue with percentage calc
+  int rlen;
+  if (E.cy + 1 > E.numrows) {
+    
+      
+    rlen = snprintf(rstatus, sizeof(rstatus), "L %s", 
+      "EOF");
+
+  } else {
+    
+    float perc = ((float)E.cy + 1)/((float)E.numrows) * 100;
+  
+    rlen = snprintf(rstatus, sizeof(rstatus), "L %d:%d %.0f%%", 
+      E.cy + 1 >= E.numrows ? E.numrows : E.cy + 1, 
+      E.cx + 1, 
+      perc > 0 || perc <= 100 ? perc : 0);
+
+  }  
+  //end of EOF status logic
 
   if (len > E.screencols) len = E.screencols;
 
@@ -1202,7 +1217,33 @@ void editorMoveCursor (int key) {
       }
      
       break;
+
+  case WORD_LAST:
+      if (E.cx != 0) {
+        while (E.cx != 0 && row->render[E.cx] != ' ' && 
+          row->render[E.cx] != KILO_TAB_STOP) 
+        {
+
+          E.cx--;
+
+        }
+        while ((E.cx != 0 && row->render[E.cx] == ' ') || 
+               (E.cx != 0 && row->render[E.cx] == KILO_TAB_STOP)) 
+        {
+
+          E.cx--;
+
+        }
+
+      } else if (E.cy > 0) {
         
+        E.cy--;
+        E.cx = 0;
+        
+      }
+     
+      break;      
+
     //up
     case ARROW_UP:
       if (E.cy != 0) {
@@ -1352,7 +1393,7 @@ void editorProcessKeypress () {
       if (E.modal) {
         
         E.modal = 0;
-        editorSetStatusMessage("EDIT MODE"); 
+        editorSetStatusMessage("TYPE MODE"); 
         
       } else {
         
@@ -1383,9 +1424,15 @@ void editorProcessKeypress () {
           case 'w':
             editorMoveCursor(WORD_NEXT);
             break;
+          case 'W':
+            editorMoveCursor(WORD_LAST);
+            break;
           case 'd':
             editorMoveCursor(ARROW_RIGHT);
             editorDelChar();
+            break;
+          case 'D':
+            editorDelRow(E.cy);
             break;
           
         }
