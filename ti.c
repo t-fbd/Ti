@@ -1392,7 +1392,7 @@ void editorMoveCursor (int key) {
       } else if (E.cy > 0) {
         
         E.cy--;
-        E.cx = 0;
+        E.cx = E.row[E.cy].size;
         
       }
      
@@ -1418,29 +1418,12 @@ void editorMoveCursor (int key) {
       break;
     //EOL
     case END_KEY:
-      if (row && E.cx < row->size) {
-
-        E.cx = E.screencols - 1;
-
-      } else if (row && E.cx == row->size) { //move forward a row when cursor is past rowlen
-        
-        E.cy++;
-        E.cx = 0;
-        
-      }
+      if (row && E.cx < row->size) E.cx = E.screencols - 1;
       break;
     //start of line
     case HOME_KEY:
-      if (E.cx != 0) {
-
-        E.cx = 0;
-
-      } else if (E.cy > 0) { //move back a row if attempting to move past left edge of screen
-        
-        E.cy--;
-        E.cx = E.row[E.cy].size;
-        
-      }
+      E.cx = 0;
+      E.coloff = 0;
       break;
 
   }
@@ -1564,7 +1547,7 @@ void editorProcessKeypress () {
       if (E.modal) {
         char *command;
         switch (c){
-          
+    
           case 'i':
             E.modal = 0;
             editorSetStatusMessage("INSERT MODE");
@@ -1600,13 +1583,10 @@ void editorProcessKeypress () {
           //command line
           case ':':
             command = editorPrompt("command: %s");
-            
+      
             //commands
-            if (!strcmp(command, "") || command == NULL) {
-
-              break;
-
-            }
+            if (command == NULL) break;
+            
             if (!strcmp(command, "q") || !strcmp(command, "quit")) {
 
               if (E.dirty) {
@@ -1617,17 +1597,17 @@ void editorProcessKeypress () {
                 return;
 
               }
-              
+        
               free(command);
               editorExit();
               break;
 
             } else if (!strcmp(command, "!q") || !strcmp(command, "!quit")) {
-              
+        
               free(command);
               editorExit();
               break;
-              
+        
             } else if (!strcmp(command, "w") || !strcmp(command, "write")) {
 
               editorSave();
@@ -1640,24 +1620,26 @@ void editorProcessKeypress () {
               break;
 
             } else if (!strcmp(command, "wq") || !strcmp(command, "done")) {
-              
+        
               editorSave();
               if (E.filename != NULL) {
-                
+          
                 free(command);
                 editorExit();
 
               }
-              
+        
               break;
 
             }
 
           free(command);
           break;
-          
+    
         }
         
+      break;
+
       } else {
         
         editorInsertChar(c);
