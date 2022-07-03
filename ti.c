@@ -776,9 +776,7 @@ void editorOpen(char *filename) {
   //read entire file into E.row struct array, will return -1 when file reaches
   //EOF
   while ((linelen = getline(&line, &linecap, fp)) != -1) {
-    while (linelen > 0 && (line[linelen - 1] == '\n' ||
-                             line[linelen - 1] == '\r' ))
-      linelen--;
+    line[(linelen = strcspn(line, "\r\n"))] = 0;
       //add each row to 'row' erow struct array
     editorInsertRow(E.numrows, line, linelen);
     
