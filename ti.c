@@ -136,6 +136,7 @@ struct editorConfig {
 
 };
 
+//init global config struct 'E'
 struct editorConfig E;
 
 
@@ -436,6 +437,11 @@ int getWindowSize (int *rows, int *cols) {
   Covert char index to render index, loop through all chars in chars index and
   add space in render index for tabs - return render index (rx) which will be used 
   instead of chars index (cx)
+
+  If there are no tabs on the current line, then E.rx will be the same as E.cx. If
+  there are tabs, then E.rx will be greater than E.cx by however many extra spaces 
+  those tabs take up when rendered.
+
 */
 int editorRowCxToRx (erow *row, int cx) {
   
@@ -452,6 +458,30 @@ int editorRowCxToRx (erow *row, int cx) {
   }
   
   return rx;
+  
+}
+
+//render index to char index to fix ignore tab rendering when searching - otherwise
+//incorrect cursor position
+int editorRowRxToCx (erow *row, int rx) {
+  
+  int cur_rx = 0;
+  int cx;
+  for (cx =0; cx < row->size; ++cx) {
+    
+    //add 1 to cur_rx for each tab
+    if (row->chars[cx] == '\t') 
+      cur_rx += (TI_TAB_STOP - 1) - (cur_rx % TI_TAB_STOP);
+    
+    cur_rx++;
+    
+    //when rx reaches cur_rx value, return cx, this will complete ignoring tab rendering
+    if (cur_rx > rx) return cx;
+  
+  }
+  
+  //in case rx was out of range
+  return cx;
   
 }
 
@@ -825,12 +855,52 @@ void editorSave() {
       
     }
      
+    close(fd);
+    
   }
   
   free(buf);
   editorSetStatusMessage("Failed write to disk! I/O error: %s", strerror(errno));
   
 }
+
+
+/*~~~~~~~~~~~~~~~~~~~~ find / search ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+void editorSearch() {
+
+  char *query = editorPrompt("Search: %s (ESC to cancel)");
+  if (query == NULL) return;
+  
+  int i;
+  for (i = 0; i < E.numrows; ++i) {
+    
+    erow *row = &E.row[i];
+    //strstr(const char *haystack, const char *needle)
+    //haystack = large string to scan for substring
+    //needle = substring to search for in haystack
+    //returns NULL if not present, if present return address of substr
+    char *match = strstr(E.row->render, query);
+    //if search found in row
+    if (match) {
+      
+      //set cursor row to row where search term found
+      E.cy = i;
+      //set cursor column to where search term found
+      E.cx = editorRowRxToCx(row, match - row->render);
+      //set top of screen to search term by setting rowoff to bottom of file,
+      //which will cause editorScroll() to scroll up at next screen refresh
+      E.rowoff = E.numrows;
+      break;
+      
+    }
+    
+  }
+
+  free(query);
+
+}
+
 
 /*~~~~~~~~~~~~~~~~~~~~ append buffer ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -853,7 +923,7 @@ struct abuf {
 /*
   realloc() and free() come from <stdlib.h>. memcpy() comes from <string.h>
 
-  use char *new to assign/reallocate a block of memory that is the size of 
+  use char *app to assign/reallocate a block of memory that is the size of 
     the existing buffer - realloc will handle freeing or extending the block 
     of memory, if buffer NULL then return, otherwise use memcpy() to copy 's' 
     to the end of the existing buffer stream
@@ -862,11 +932,11 @@ struct abuf {
 */
 void abAppend (struct abuf *ab, const char *s, int len) {
 
-  char *new = realloc(ab->b, ab->len + len);
+  char *app = realloc(ab->b, ab->len + len);
   
-  if (new == NULL) return;
-  memcpy(&new[ab->len], s, len);
-  ab->b = new;
+  if (app == NULL) return;
+  memcpy(&app[ab->len], s, len);
+  ab->b = app;
   ab->len += len;
   
 }
@@ -1494,13 +1564,15 @@ void editorProcessKeypress () {
     //if edit mode or command, then print character to screen
     default:
       if (E.modal) {
-        char *tmp;
-        char *command = malloc(sizeof(tmp));
+        char *command;
         switch (c){
           
           case 'i':
             E.modal = 0;
             editorSetStatusMessage("INSERT MODE");
+            break;
+          case '/':
+            editorSearch();
             break;
           case 'h':
             editorMoveCursor(ARROW_LEFT);
@@ -1529,29 +1601,32 @@ void editorProcessKeypress () {
             break;
           //command line
           case ':':
-            tmp = editorPrompt("command: %s");
-            command = realloc(command, sizeof(tmp));
-            command = tmp;
-            tmp = NULL;
+            command = editorPrompt("command: %s");
             
             //commands
-            if (command == NULL) break;
+            if (!strcmp(command, "") || command == NULL) {
+
+              break;
+
+            }
             if (!strcmp(command, "q") || !strcmp(command, "quit")) {
 
               if (E.dirty) {
 
+                free(command);
                 editorSetStatusMessage("!UNSAVED CHANGES! Press <ENTER> to confirm, ANY other key to cancel");
                 if (quit_times) quit_times--;
                 return;
 
               }
               
+              free(command);
               editorExit();
-
               break;
 
             } else if (!strcmp(command, "!q") || !strcmp(command, "!quit")) {
               
+              free(command);
               editorExit();
               break;
               
@@ -1562,22 +1637,28 @@ void editorProcessKeypress () {
 
             } else if (!strcmp(command, "help") || !strcmp(command, "h")) {
 
-              editorSetStatusMessage("view README.md for keybinds");
+              editorSetStatusMessage
+                ("'w'/'write', '!q'/'!quit', 'wq'/'done', '/' - search");
               break;
 
             } else if (!strcmp(command, "wq") || !strcmp(command, "done")) {
               
               editorSave();
-              editorExit();
+              if (E.filename != NULL) {
+                
+                free(command);
+                editorExit();
+
+              }
+              
               break;
 
             }
 
-            break;
+          free(command);
+          break;
           
         }
-        
-        free(command);
         
       } else {
         
@@ -1635,7 +1716,8 @@ int main (int argc, char *argv[]) {
   
   }
   
-  editorSetStatusMessage("<C-q> = Quit  |  <C-s> = Save | ESC = Mode");
+  editorSetStatusMessage
+    ("<C-q> = Quit  |  <C-s> = Save | ESC = Movement mode | i = Insert mode");
   
   while (1) {
     
