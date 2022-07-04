@@ -867,14 +867,32 @@ void editorSave() {
 
 void editorSearchCallback(char *query, int key) {
   
+  static int last_match = -1;
+  static int direction = 1;
+  
   if (key == '\r' || key =='\x1b') {
+    last_match = -1;
+    direction = 1;
     return;
+  } else if (key == ARROW_RIGHT || key == ARROW_DOWN) {
+    direction = -1;
+  } else if (key == ARROW_LEFT || key == ARROW_UP) {
+    direction = -1;
+  } else {
+    last_match = -1;
+    direction = 1;
   }
 
+  if (last_match == -1) direction = 1;
+  int current = last_match;
+  
   int i;
   for (i = 0; i < E.numrows; ++i) {
+    current += direction;
+    if (current == -1) current = E.numrows - 1;
+    else if (current == E.numrows) current = 0;
     
-    erow *row = &E.row[i];
+    erow *row = &E.row[current];
     //strstr(const char *haystack, const char *needle)
     //haystack = large string to scan for substring
     //needle = substring to search for in haystack
@@ -883,8 +901,9 @@ void editorSearchCallback(char *query, int key) {
     //if search found in row
     if (match) {
       
+      last_match = current;
       //set cursor row to row where search term found
-      E.cy = i;
+      E.cy = current;
       //set cursor column to where search term found
       E.cx = editorRowRxToCx(row, match - row->render);
       //set top of screen to search term by setting rowoff to bottom of file,
@@ -905,7 +924,7 @@ void editorSearch() {
   int saved_coloff = E.coloff;
   int saved_rowoff = E.rowoff;
 
-  char *query = editorPrompt("Search: %s (ESC to cancel)", editorSearchCallback);
+  char *query = editorPrompt("Search: %s (ESC/Arrows/Enter)", editorSearchCallback);
   if (query) { 
 
     free(query);
