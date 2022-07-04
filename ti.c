@@ -144,7 +144,7 @@ struct editorConfig E;
 
 void editorSetStatusMessage(const char *fmt, ...);
 void editorRefreshScreen();
-char *editorPrompt(char *prompt);
+char *editorPrompt(char *prompt, void (*callback)(char *, int));
 
 /*~~~~~~~~~~~~~~~~~~~~ terminal ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -467,7 +467,7 @@ int editorRowRxToCx (erow *row, int rx) {
   
   int cur_rx = 0;
   int cx;
-  for (cx =0; cx < row->size; ++cx) {
+  for (cx = 0; cx < row->size; ++cx) {
     
     //add 1 to cur_rx for each tab
     if (row->chars[cx] == '\t') 
@@ -795,7 +795,7 @@ void editorSave() {
   
   if (E.filename == NULL) {
     
-    E.filename = editorPrompt("Save as: %s (ESC to cancel)");
+    E.filename = editorPrompt("Save as: %s (ESC to cancel)", NULL);
     if (E.filename == NULL) {
       
       editorSetStatusMessage("Save aborted");
@@ -865,11 +865,12 @@ void editorSave() {
 
 /*~~~~~~~~~~~~~~~~~~~~ find / search ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-void editorSearch() {
-
-  char *query = editorPrompt("Search: %s (ESC to cancel)");
-  if (query == NULL) return;
+void editorSearchCallback(char *query, int key) {
   
+  if (key == '\r' || key =='\x1b') {
+    return;
+  }
+
   int i;
   for (i = 0; i < E.numrows; ++i) {
     
@@ -878,7 +879,7 @@ void editorSearch() {
     //haystack = large string to scan for substring
     //needle = substring to search for in haystack
     //returns NULL if not present, if present return address of substr
-    char *match = strstr(E.row->render, query);
+    char *match = strstr(row->render, query);
     //if search found in row
     if (match) {
       
@@ -892,10 +893,15 @@ void editorSearch() {
       break;
       
     }
-    
-  }
 
-  free(query);
+  }
+  
+}
+
+void editorSearch() {
+
+  char *query = editorPrompt("Search: %s (ESC to cancel + ENTER to cancel after initial search)", NULL);
+  if (query) free(query);
 
 }
 
@@ -1240,7 +1246,7 @@ void editorSetStatusMessage (const char *fmt, ...) {
 
 /*~~~~~~~~~~~~~~~~~~~~ input ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-char *editorPrompt (char *prompt) {
+char *editorPrompt (char *prompt, void (*callback)(char *, int)) {
   
   //init buf with size of 128 to ensure in range of char
   size_t bufsize = 128;
@@ -1269,6 +1275,7 @@ char *editorPrompt (char *prompt) {
     else if (c == '\x1b') {
       
       editorSetStatusMessage("");
+      if (callback) callback(buf, c);
       free(buf);
       return NULL;
       
@@ -1280,6 +1287,7 @@ char *editorPrompt (char *prompt) {
         
         //reset status message
         editorSetStatusMessage("");
+        if (callback) callback(buf, c);
         //return user input from prompt
         return buf;
         
@@ -1304,6 +1312,7 @@ char *editorPrompt (char *prompt) {
         
     }
       
+    if (callback) callback(buf, c);
   }
   
 }
@@ -1582,7 +1591,7 @@ void editorProcessKeypress () {
             break;
           //command line
           case ':':
-            command = editorPrompt("command: %s");
+            command = editorPrompt("command: %s", NULL);
       
             //commands
             if (command == NULL) break;
