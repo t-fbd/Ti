@@ -14,6 +14,16 @@ Anything to do with modal operations and commands were implemented by me. Severa
 keyboard operations in regard to UX. All other credit is entirely to Paige Ruten's "BYOE" project as well as antirez's 
 original Kilo project.
 
+Features
+========
+
+- Syntax Highlighting for:
+    - C
+    - TODO...        
+- Search functionality
+- Modal editor, 2 modes - NORMAL/INSERT
+- Simple editor-command line
+
 Keybinds
 ========
 
@@ -47,6 +57,7 @@ Keybinds
 
 - **d** : delete character under cursor
 - **D** : delete current row
+- **ENTER** : insert row
 
 - **:** : open editor command line
     - 'w' or 'write' - Save file
@@ -62,9 +73,17 @@ Keybinds
 TODO
 ====
 
-1) Improve everything
-2) ...
-
+- Syntax highlighting:
+    - Python
+    - Rust
+    - Bash
+    - Zsh
+    - Make
+    - Git
+    - HTML
+    - ...
+- Undo / Redo functionality
+- Rewrite C -> Rust
 
 Contributers / Credit To
 ========================
