@@ -55,7 +55,17 @@ enum editorHighlight {
 
 };
 
+#define HL_HIGHLIGHT_NUMBERS (1<<10)
+
 /*~~~~~~~~~~~~~~~~~~~~ data ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+struct editorSyntax {
+
+  char *filetype;
+  char **filematch;
+  int flags;
+
+};
 
 typedef struct erow {
 
@@ -82,10 +92,25 @@ struct editorConfig {
   char *filename;
   char statusmsg[80];
   time_t statusmsg_time;
+  struct editorSyntax *syntax;
   struct termios orig_termios;
 };
 
 struct editorConfig E;
+
+/*~~~~~~~~~~~~~~~~~~~~ filetypes ~~~~~~~~~~~~~~~~~~~*/
+
+char *C_HL_extensions[] = { ".c", ".h", ".cpp", NULL};
+
+struct editorSyntax HLDB[] = {
+  {
+    "c",
+    C_HL_extensions,
+    HL_HIGHLIGHT_NUMBERS
+  },
+};
+
+#define HLDB_ENTRIES (sizeof(HLDB) / sizeof(HLDB[0]))
 
 /*~~~~~~~~~~~~~~~~~~~~ function prototypes ~~~~~~~~~~~~~~~~~~~*/
 
@@ -248,7 +273,8 @@ void editorUpdateSyntax(erow *row) {
     char c = row->render[i];
     unsigned char prev_hl = (i > 0) ? row->hl[i - 1] : HL_NORMAL;
 
-    if (isdigit(c) && (prev_sep || prev_hl == HL_NUMBER)) {
+    if ((isdigit(c) && (prev_sep || prev_hl == HL_NUMBER)) || 
+        (c == '.' && prev_hl == HL_NUMBER)) {
       row->hl[i] = HL_NUMBER;
       i++;
       prev_sep = 0;
@@ -704,8 +730,8 @@ void editorDrawStatusBar(struct abuf *ab) {
   int len = snprintf(status, sizeof(status), "%.20s - %d Lines %s",
                      E.filename ? E.filename : "[SCRATCH]", E.numrows,
                      E.dirty ? "(+)" : "");
-
-  int rlen;
+  int rlen = snprintf(rstatus, sizeof(rstatus), "%s | %d/%d",
+    E.syntax ? E.syntax->filetype : "no filetype detected", E.cy + 1, E.numrows);
   if (E.cy + 1 > E.numrows) {
     rlen = snprintf(rstatus, sizeof(rstatus), "L %s", "EOF");
   } else {
@@ -1053,6 +1079,8 @@ void initEditor() {
   E.filename = NULL;
   E.statusmsg[0] = '\0';
   E.statusmsg_time = 0;
+  E.syntax = NULL;
+  
   if (getWindowSize(&E.screenrows, &E.screencols) == -1)
     die("getWindowSize");
   E.screenrows -= 2;
