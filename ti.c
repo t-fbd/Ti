@@ -68,7 +68,8 @@ enum editorKey {
 enum editorHighlight {
   
   HL_NORMAL = 0,
-  HL_NUMBER
+  HL_NUMBER,
+  HL_MATCH
   
 };
 
@@ -435,6 +436,14 @@ int getWindowSize (int *rows, int *cols) {
 
 /*~~~~~~~~~~~~~~~~~~~~ syntax highlighting ~~~~~~~~~~~~~~~~~~~~*/
 
+int is_seperator (int c) {
+  
+  //require that numbers to highlight are preceded by a separator character, which 
+  //includes whitespace or punctuation characters
+  return isspace(c) || c == '\0' || strchr(",.()+-/*=~%<>[];", c) != NULL;
+  
+}
+
 void editorUpdateSyntax (erow *row) {
   
   //void *memset(void *s, int c, size_t n);
@@ -444,14 +453,26 @@ void editorUpdateSyntax (erow *row) {
   row->hl = realloc(row->hl, row->rsize);
   memset(row->hl, HL_NORMAL, row->size);
   
-  int  i;
-  for (i = 0; i < row->size; ++i) {
+  //beginning of line considered seperator
+  int prev_sep = 1;
+  
+  int  i= 0;
+  while (i < row->rsize) {
+
+    char c = row->render[i];
+    unsigned char prev_hl = (i > 0) ? row->hl[i - 1] : HL_NORMAL;
     
-    if (isdigit(row->render[i])) {
+    if (isdigit(c) && (prev_sep || prev_hl == HL_NUMBER)) {
       
       row->hl[i] = HL_NUMBER;
+      i++;
+      prev_sep = 0;
+      continue;
       
     }
+    
+    prev_sep = is_seperator(c);
+    i++;
     
   }
   
@@ -461,8 +482,10 @@ int editorSyntaxToColor (int hl) {
   
   switch (hl) {
     
-    //red
+    //if number then red
     case HL_NUMBER: return 31;
+    //if search match then blue
+    case HL_MATCH: return 34;
     //white incase of slip-through values
     default: return 37;
     
@@ -911,17 +934,39 @@ void editorSave() {
 
 /*~~~~~~~~~~~~~~~~~~~~ find / search ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+/* 
+  From snaptoken/paige - 
+  "malloc()’d memory is guaranteed to be free()’d, because when the user closes
+  the search prompt by pressing Enter or Escape, editorPrompt() calls our
+  callback, giving a chance for hl to be restored before editorPrompt() finally
+  returns. Also notice that it’s impossible for saved_hl to get malloc()’d before
+  its old value gets free()’d, because we always free() it at the top of the
+  function. And finally, it’s impossible for the user to edit the file between
+  saving and restoring the hl, so we can safely use saved_hl_line as an index
+  into E.row"
+*/
 void editorSearchCallback(char *query, int key) {
   
   static int last_match = -1;
   static int direction = 1;
+  
+  static int saved_hl_line;
+  static char *saved_hl = NULL;
+  
+  if (saved_hl) {
+    
+    memcpy(E.row[saved_hl_line].hl, saved_hl, E.row[saved_hl_line].rsize);
+    free(saved_hl);
+    saved_hl = NULL;
+    
+  }
   
   if (key == '\r' || key =='\x1b') {
     last_match = -1;
     direction = 1;
     return;
   } else if (key == ARROW_RIGHT || key == ARROW_DOWN) {
-    direction = -1;
+    direction = 1;
   } else if (key == ARROW_LEFT || key == ARROW_UP) {
     direction = -1;
   } else {
@@ -955,6 +1000,11 @@ void editorSearchCallback(char *query, int key) {
       //set top of screen to search term by setting rowoff to bottom of file,
       //which will cause editorScroll() to scroll up at next screen refresh
       E.rowoff = E.numrows;
+      
+      saved_hl_line = current;
+      saved_hl = malloc(row->rsize);
+      memcpy(saved_hl, row->hl, row->rsize);
+      memset(&row->hl[match - row->render], HL_MATCH, strlen(query));
       break;
       
     }
