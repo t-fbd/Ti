@@ -157,8 +157,9 @@ char *BASH_HL_keywords[] = {
   //reserved words
   "!", "case", "coproc", "do", "done", "elif", "else", "esac", "fi", "for", 
   "function", "if", "in", "select", "then", "until", "while", "{", "}", 
-  "time", "[[", "]]"
-
+  "time", "[[", "]]",
+  //commands
+  "$|", NULL
 };
 
 struct editorSyntax HLDB[] = {
@@ -187,7 +188,7 @@ struct editorSyntax HLDB[] = {
    "BASH",
     BASH_HL_extensions,
     BASH_HL_keywords,
-    "# ", "", "",
+    "# ", "#!", "sh",
     HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS
   },
 };
