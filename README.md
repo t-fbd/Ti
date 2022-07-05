@@ -1,4 +1,4 @@
-Ti - A Kilo inspired, Vi like editor  
+Ti - A Kilo fork
 ====================================
 
 This is solely being used as a learning tool. If you notice anything 
@@ -11,11 +11,13 @@ See original kilo source code at [github/antirez](https://github.com/antirez/kil
 See [Paige Ruten's](https://github.com/paigeruten "paigeruten") 'BYOE' documents [here](https://viewsourcecode.org/snaptoken/kilo/02.enteringRawMode.html "Build Your Own Editor")
 
 Anything to do with modal operations and commands were implemented by me. Several improvements were made to much of the 
-keyboard operations in regard to UX. I'll have diff files posted as well as cloc diff data for this and kilo posted soon.
+keyboard operations in regard to UX. All other credit is entirely to Paige Ruten's "BYOE" project as well as antirez's 
+original Kilo project.
 
-# Keybinds
+Keybinds
+========
 
-### General bindings
+#### General bindings
 
 - **Ctrl + q** : Quit, if unsaved changes, a prompt will appear and require you to press <ENTER> 
 
@@ -30,7 +32,13 @@ keyboard operations in regard to UX. I'll have diff files posted as well as cloc
 - **Page Up** : Go up one page
 - **Page Down** : Go down one page
 
-### Normal mode
+#### Normal mode
+
+- **/** : search
+    - 'Down arrow (↓) / Right arrow (→)' - Next Search
+    - 'Up arrow (↑) / Left arrow (←)' - Previous search result
+    - 'ESC' - Cancel search
+    - 'ENTER' - Go to current selection
 
 - **h, j, k, l** : left, down, up, right movement keys
 
@@ -47,7 +55,7 @@ keyboard operations in regard to UX. I'll have diff files posted as well as cloc
     - 'wq' or 'done' - Save and quit
     - 'h' or 'help' - Help menu, currently just directs user to README
 
-### Insert mode
+#### Insert mode
 
 - All general keybindings should work, as well as normal typing to screen
 
