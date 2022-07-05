@@ -13,7 +13,6 @@
 
 #define TI_VERSION "0.0.1"
 
-
 /*~~~~~~~~~~~~~~~~~~~~ includes ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 //Added for portability with getline() on some compilers
@@ -62,11 +61,16 @@ enum editorKey {
   PAGE_UP,
   PAGE_DOWN,
   WORD_NEXT,
-  //TODO fix WORD_LAST
   WORD_LAST
   
 };
 
+enum editorHighlight {
+  
+  HL_NORMAL = 0,
+  HL_NUMBER
+  
+};
 
 /*~~~~~~~~~~~~~~~~~~~~ data ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -429,6 +433,42 @@ int getWindowSize (int *rows, int *cols) {
 
 }
 
+/*~~~~~~~~~~~~~~~~~~~~ syntax highlighting ~~~~~~~~~~~~~~~~~~~~*/
+
+void editorUpdateSyntax (erow *row) {
+  
+  //void *memset(void *s, int c, size_t n);
+  //s = dest to be filled
+  //c = value to store
+  //number of characters to store
+  row->hl = realloc(row->hl, row->rsize);
+  memset(row->hl, HL_NORMAL, row->size);
+  
+  int  i;
+  for (i = 0; i < row->size; ++i) {
+    
+    if (isdigit(row->render[i])) {
+      
+      row->hl[i] = HL_NUMBER;
+      
+    }
+    
+  }
+  
+}
+
+int editorSyntaxToColor (int hl) {
+  
+  switch (hl) {
+    
+    //red
+    case HL_NUMBER: return 31;
+    //white incase of slip-through values
+    default: return 37;
+    
+  }
+  
+}
 
 /*~~~~~~~~~~~~~~~~~~~~ row operations ~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -520,6 +560,9 @@ void editorUpdateRow (erow *row) {
   
   row->render[idx] = '\0';
   row->rsize = idx;
+  
+  //set syntax after render array is updated
+  editorUpdateSyntax(row);
 
 }
 
@@ -1095,25 +1138,44 @@ void editorDrawRows (struct abuf *ab) {
       if (len < 0) len = 0;
       if (len > E.screencols) len = E.screencols;
       char *c = &E.row[filerow].render[E.coloff];
+      unsigned char *hl = &E.row[filerow].hl[E.coloff];
+      int current_color = -1;
       int j;
       for (j = 0;j < len; ++j) {
         
-        if (isdigit(c[j])) {
+        if (hl[j] == HL_NORMAL) {
+          if (current_color != -1) {
+            
+            // refer to https://en.wikipedia.org/wiki/ANSI_escape_code
+            //set back to default color
+            abAppend(ab, "\x1b[39m", 5);
+            current_color = -1;
+            
+          }
           
-          //ANSI escape for red color
-          // refer to https://en.wikipedia.org/wiki/ANSI_escape_code
-          abAppend(ab, "\x1b[31m", 5);
           abAppend(ab, &c[j], 1);
-          //set back to default color
-          abAppend(ab, "\x1b[39m", 5);
           
         } else {
           
+          int color = editorSyntaxToColor(hl[j]);
+          if (color != current_color) {
+            
+            current_color = color;
+            char buf[16];
+            //set color obtained from editorSyntaxToColor
+            int colorlen = snprintf(buf, sizeof(buf), "\x1b[%dm", color);
+            abAppend(ab, buf, colorlen);
+            
+          }
+
           abAppend(ab, &c[j], 1);
           
         }
         
       }
+      
+      //set to default colors
+      abAppend(ab, "\x1b[39m", 5);
       
     }
     
