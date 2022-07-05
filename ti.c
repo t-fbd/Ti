@@ -51,7 +51,6 @@ enum editorHighlight {
 
   HL_NORMAL = 0,
   HL_COMMENT,
-  HL_HEADER,
   HL_MLCOMMENT,
   HL_KEYWORD1,
   HL_KEYWORD2,
@@ -71,8 +70,6 @@ struct editorSyntax {
   char *filetype;
   char **filematch;
   char **keywords;
-  char *header_start;
-  char *header_end;
   char *single_line_comment_start;
   char *multi_line_comment_start;
   char *multi_line_comment_end;
@@ -88,7 +85,6 @@ typedef struct erow {
   char *chars;
   char *render;
   unsigned char *hl;
-  int hl_header;
   int hl_open_comment;
 
 } erow;
@@ -118,19 +114,80 @@ struct editorConfig E;
 
 char *C_HL_extensions[] = { ".c", ".h", ".cpp", NULL};
 char *C_HL_keywords[] = {
+  //keywords
   "switch", "if", "while", "for", "break", "continue", "return", "else",
   "struct", "union", "typedef", "static", "enum", "class", "case",
 
+  //types
   "int|", "long|", "double|", "float|", "char|", "unsigned|", "signed|",
-  "void|", "#define", "#include", NULL
+  "void|", "#define", "#include",
+  
+  //preprocessor directives
+  "#define|", "#endif|", "#error|", "#if|", "#ifdef|", "#ifndef|", "#include|", 
+  "#undef|", NULL
+};
+
+char *PYTHON_HL_extensions[] = { ".py", NULL};
+char *PYTHON_HL_keywords[] = {
+  //keywords
+  "and", "as", "assert", "break", "class", "continue", "def", "del", "elif", 
+  "else", "except", "exec", "finally", "for", "from", "global", "if", "import", 
+  "in", "is", "lambda", "not", "or", "pass", "print", "raise", "return", "try", 
+  "while", "with", "yield",
+  
+  //types
+  "buffer|", "bytearray|", "complex|", "False|", "float|", "frozenset|", "int|", 
+  "list|", "long|", "None|", "set|", "str|", "tuple|", "True|", "type|", "unicode|", 
+  "xrange|", NULL
+};
+
+char *GO_HL_extensions[] = { ".go", NULL};
+char *GO_HL_keywords[] = {
+  //keywords
+  "if", "for", "range", "while", "defer", "switch", "case", "else", "func", 
+  "package", "import", "type", "struct", "import", "const", "var",
+  
+  //types
+  "nil|", "true|", "false|", "error|", "err|", "int|", "int32|", "int64|", "uint|", 
+  "uint32|", "uint64|", "string|", "bool|", NULL
+};
+
+char *BASH_HL_extensions[] = { ".sh", NULL};
+char *BASH_HL_keywords[] = {
+  //reserved words
+  "!", "case", "coproc", "do", "done", "elif", "else", "esac", "fi", "for", 
+  "function", "if", "in", "select", "then", "until", "while", "{", "}", 
+  "time", "[[", "]]"
+
 };
 
 struct editorSyntax HLDB[] = {
   {
-    "c",
+    "C",
     C_HL_extensions,
     C_HL_keywords,
-    "<", ">", "//", "/*", "*/",
+    "//", "/*", "*/",
+    HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS
+  },
+  {
+   "PYTHON",
+    PYTHON_HL_extensions,
+    PYTHON_HL_keywords,
+    "# ", "\"\"\"", "\"\"\"",
+    HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS
+  },
+  {
+   "GO",
+    GO_HL_extensions,
+    GO_HL_keywords,
+    "//", "/*", "*/",
+    HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS
+  },
+  {
+   "BASH",
+    BASH_HL_extensions,
+    BASH_HL_keywords,
+    "# ", "", "",
     HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS
   },
 };
@@ -299,61 +356,29 @@ void editorUpdateSyntax(erow *row) {
   char *scs = E.syntax->single_line_comment_start;
   char *mcs = E.syntax->multi_line_comment_start;
   char *mce = E.syntax->multi_line_comment_end;
-  char *hs = E.syntax->header_start;
-  char *he = E.syntax->header_end; 
 
   int scs_len = scs ? strlen(scs) : 0;
   int mcs_len = mcs ? strlen(mcs) : 0;
   int mce_len = mce ? strlen(mce) : 0;
-  int hs_len = hs ? strlen(hs) : 0;
-  int he_len = he ? strlen(he) : 0;
 
   int prev_sep = 1;
   int in_string = 0;
   int in_comment = (row->idx > 0 && E.row[row->idx - 1].hl_open_comment);
-  int in_header = (row->idx > 0 && E.row[row->idx - 1].hl_header);
   
   int i = 0;
   while (i < row->rsize) {
     char c = row->render[i];
     unsigned char prev_hl = (i > 0) ? row->hl[i - 1] : HL_NORMAL;
     
-    if (hs_len && !in_string && !in_header && !in_comment) {
-      if (!strncmp(&row->render[i], hs, hs_len)) {
-        memset(&row->hl[i], HL_HEADER, row->size - i);
-        break;
-      }
-    }
 
-    if (scs_len && !in_string && !in_comment && !in_header) {
+    if (scs_len && !in_string && !in_comment) {
       if (!strncmp(&row->render[i], scs, scs_len)) {
         memset(&row->hl[i], HL_COMMENT, row->size - i);
         break;
       }
     }
 
-    if (hs_len && he_len && !in_string && !in_comment) {
-      if (in_header) {
-        row->hl[i] = HL_HEADER;
-        if (!strncmp(&row->render[i], he, he_len)) {
-          memset(&row->hl[i], HL_HEADER, he_len);
-          i += he_len;
-          in_header = 0;
-          prev_sep = 1;
-          continue;
-        } else {
-          i++;
-          continue;
-        }
-      } else if (!strncmp(&row->render[i], hs, hs_len)) {
-        memset(&row->hl[i], HL_HEADER, hs_len);
-        i += hs_len;
-        in_header = 1;
-        continue;
-      }
-    }
-  
-    if (mcs_len && mce_len && !in_string && !in_header) {
+    if (mcs_len && mce_len && !in_string) {
       if (in_comment) {
         row->hl[i] = HL_MLCOMMENT;
         if (!strncmp(&row->render[i], mce, mce_len)) {
@@ -430,13 +455,9 @@ void editorUpdateSyntax(erow *row) {
     i++;
   }
   
-  int changed_c = (row->hl_open_comment != in_comment);
-  int changed_h = (row->hl_header != in_header);
+  int changed = (row->hl_open_comment != in_comment);
   row->hl_open_comment = in_comment;
-  row->hl_header = in_header;
-  if (changed_c && row->idx + 1 < E.numrows)
-    editorUpdateSyntax(&E.row[row->idx + 1]);
-  if (changed_h && row->idx + 1 < E.numrows)
+  if (changed && row->idx + 1 < E.numrows)
     editorUpdateSyntax(&E.row[row->idx + 1]);
 }
 
@@ -453,7 +474,6 @@ int editorSyntaxToColor(int hl) {
   case HL_KEYWORD2:
     return 32;
 
-  case HL_HEADER:
   case HL_STRING:
     return 35;
 
@@ -570,7 +590,6 @@ void editorInsertRow(int at, char *s, size_t len) {
   E.row[at].render = NULL;
   E.row[at].hl = NULL;
   E.row[at].hl_open_comment = 0;
-  E.row[at].hl_header = 0;
   editorUpdateRow(&E.row[at]);
 
   E.numrows++;
@@ -948,15 +967,13 @@ void editorDrawStatusBar(struct abuf *ab) {
   int len = snprintf(status, sizeof(status), "%.20s - %d Lines %s",
                      E.filename ? E.filename : "[SCRATCH]", E.numrows,
                      E.dirty ? "(+)" : "");
-  int rlen = snprintf(rstatus, sizeof(rstatus), "%s | %d/%d",
-    E.syntax ? E.syntax->filetype : "no ftype", E.cy + 1, E.numrows);
+  float perc = ((float)E.cy + 1) / ((float)E.numrows) * 100;
+  int rlen = snprintf(rstatus, sizeof(rstatus), "%s | L %d:%d %.0f%%",
+                  E.syntax ? E.syntax->filetype : "filetype syntax unavailable",
+                  E.cy + 1 >= E.numrows ? E.numrows : E.cy + 1, E.cx + 1,
+                  perc > 0 || perc <= 100 ? perc : 0);
   if (E.cy + 1 > E.numrows) {
     rlen = snprintf(rstatus, sizeof(rstatus), "L %s", "EOF");
-  } else {
-    float perc = ((float)E.cy + 1) / ((float)E.numrows) * 100;
-    rlen = snprintf(rstatus, sizeof(rstatus), "L %d:%d %.0f%%",
-                    E.cy + 1 >= E.numrows ? E.numrows : E.cy + 1, E.cx + 1,
-                    perc > 0 || perc <= 100 ? perc : 0);
   }
 
   if (len > E.screencols)

@@ -17,9 +17,12 @@ original Kilo project.
 Features
 ========
 
-- Syntax Highlighting for:
+- Simple Syntax Highlighting for:
     - C
-    - TODO...        
+    - Python
+    - Go
+    - Bash (Unfinished)
+    - TODO...
 - Search functionality
 - Modal editor, 2 modes - NORMAL/INSERT
 - Simple editor-command line
@@ -74,9 +77,8 @@ TODO
 ====
 
 - Syntax highlighting:
-    - Python
     - Rust
-    - Bash
+    - Improve Bash syntax highlighting
     - Zsh
     - Make
     - Git
@@ -91,3 +93,6 @@ Contributers / Credit To
 - tairenfd
 - antirez
 - paigeruten
+- Python and Go syntax highlighting keywords/types from 
+[dvwallin's](https://github.com/dvwallin) 
+[openemacs project](https://github.com/dvwallin/openemacs), another fork of Kilo!
