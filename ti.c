@@ -1,14 +1,3 @@
-/*
-
-  Author: Tairen Dunham <tairenfd at mailbox dot org>
-  Date: June 30, 2022
-  Description: Ti is a significantly modified fork of antirez's 'Kilo' text 
-               editor / Paige Ruten's Kilo tutorial. It's largely inspired 
-               by features found in the text editor Vim, but my name is not
-               Tim, so I opted for Ti
-
-*/
-
 /*~~~~~~~~~~~~~~~~~~~~ version ~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #define TI_VERSION "0.0.1"
@@ -38,14 +27,11 @@
 
 /*~~~~~~~~~~~~~~~~~~~~ defines ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-//set tab stop length
 #define TI_TAB_STOP 8
-//set quit confimations
 #define TI_QUIT_TIMES 1
 
 #define CTRL_KEY(key) ((key) & 0x1f)
 
-//define movement key characters
 enum editorKey {
   
   BACKSPACE = 127,
@@ -1887,3 +1873,14 @@ int main (int argc, char *argv[]) {
   return 0;
   
 } 
+
+/*~~~~~~~~ FOOTNOTES - CONTRIBUTERS - ETC ~~~~~~~~~*/
+/*
+
+  Author: Tairen Dunham <tairenfd at mailbox dot org>
+  Description: Ti is a significantly modified fork of antirez's 'Kilo' text 
+               editor / Paige Ruten's Kilo tutorial. It's largely inspired 
+               by features found in the text editor Vim, but my name is not
+               Tim, so I opted for Ti
+
+*/
