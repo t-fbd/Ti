@@ -985,10 +985,8 @@ void editorDrawRows(struct abuf *ab) {
           abAppend(ab, &c[j], 1);
         }
       }
-      
-      char buf[16];
-      int colorlen = snprintf(buf, sizeof(buf), "\x1b[%dm", EDITOR_THEME);
-      abAppend(ab, buf, colorlen);
+
+      abAppend(ab, "\x1b[39m", 5);
     }
 
     abAppend(ab, "\x1b[K", 3);
@@ -997,6 +995,9 @@ void editorDrawRows(struct abuf *ab) {
 }
 
 void editorDrawStatusBar(struct abuf *ab) {
+  char buf[16];
+  int colorlen = snprintf(buf, sizeof(buf), "\x1b[%dm", EDITOR_THEME);
+  abAppend(ab, buf, colorlen);
   abAppend(ab, "\x1b[7m", 4);
   char status[80], rstatus[80];
   int len = snprintf(status, sizeof(status), "%.20s - %d Lines %s",
