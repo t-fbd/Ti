@@ -25,9 +25,9 @@
 
 /*~~~~~~~~~~~~~~~~~~~~ defines ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-#define TI_TAB_STOP 8
 #define TI_QUIT_TIMES 1
-#define EDITOR_THEME 37
+#define TI_TAB_STOP 8
+#define EDITOR_THEME 35
 
 #define CTRL_KEY(key) ((key)&0x1f)
 
@@ -55,6 +55,8 @@ enum editorHighlight {
   HL_MLCOMMENT,
   HL_KEYWORD1,
   HL_KEYWORD2,
+  HL_KEYWORD3,
+  HL_KEYWORD4,
   HL_STRING,
   HL_NUMBER,
   HL_MATCH
@@ -121,8 +123,8 @@ char *C_HL_keywords[] = {
     "int|",      "long|",     "double|", "float|",  "char|",
     "unsigned|", "signed|",   "void|",   "#define", "#include",
 
-    "#define|",  "#endif|",   "#error|", "#if|",    "#ifdef|",
-    "#ifndef|",  "#include|", "#undef|", NULL};
+    "#define||",  "#endif||",   "#error||", "#if||",    "#ifdef||",
+    "#ifndef||",  "#include||", "#undef||", NULL};
 
 char *RUST_HL_extensions[] = {".rs", NULL};
 char *RUST_HL_keywords[] = {
@@ -139,11 +141,11 @@ char *RUST_HL_keywords[] = {
 
     "macro_rules|", "union|",  "'static|",
 
-    "bool|",        "char|",   "str|",     "&str",     "u8|",      "u16|",
-    "u32|",         "u64|",    "u128|",    "i8|",      "i16|",     "i32|",
-    "i64|",         "i128|",
+    "bool||",        "char||",   "str||",     "&str",     "u8||",      "u16||",
+    "u32||",         "u64||",    "u128||",    "i8||",      "i16||",     "i32||",
+    "i64||",         "i128||",
 
-    "println!|",    NULL
+    "println!&",    NULL
 
 };
 
@@ -180,12 +182,16 @@ char *BASH_HL_keywords[] = {
 struct editorSyntax HLDB[] = {
     {"C", C_HL_extensions, C_HL_keywords, "//", "/*", "*/",
      HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
+
     {"PYTHON", PYTHON_HL_extensions, PYTHON_HL_keywords, "#", "\"\"\"",
      "\"\"\"", HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
+
     {"GO", GO_HL_extensions, GO_HL_keywords, "//", "/*", "*/",
      HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
+
     {"BASH", BASH_HL_extensions, BASH_HL_keywords, "#", "#!", "sh",
      HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
+
     {"RUST", RUST_HL_extensions, RUST_HL_keywords, "//", "/*", "*/",
      HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
 };
@@ -435,13 +441,25 @@ void editorUpdateSyntax(erow *row) {
       for (j = 0; keywords[j]; ++j) {
         int klen = strlen(keywords[j]);
         int kw2 = keywords[j][klen - 1] == '|';
-        if (kw2)
+        int kw3 = keywords[j][klen - 1] == '|' && keywords[j][klen - 2] == '|';
+        int kw4 = keywords[j][klen - 1] == '&';
+        if (kw2 || kw4)
           klen--;
+        else if (kw3)
+          klen -= 2;
 
         if (!strncmp(&row->render[i], keywords[j], klen) &&
             is_seperator(row->render[i + klen])) {
 
-          memset(&row->hl[i], kw2 ? HL_KEYWORD2 : HL_KEYWORD1, klen);
+          if (kw2 && !kw3) {
+            memset(&row->hl[i], HL_KEYWORD2, klen);
+          } else if (kw3) {
+            memset(&row->hl[i], HL_KEYWORD3, klen);
+          } else if (kw4) {
+            memset(&row->hl[i], HL_KEYWORD4, klen);
+          } else {
+            memset(&row->hl[i], HL_KEYWORD1, klen);
+          }
 
           i += klen;
           break;
@@ -475,6 +493,12 @@ int editorSyntaxToColor(int hl) {
 
   case HL_KEYWORD2:
     return 32;
+    
+  case HL_KEYWORD3:
+    return 93;
+    
+  case HL_KEYWORD4:
+    return 92;
 
   case HL_STRING:
     return 35;
