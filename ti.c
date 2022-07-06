@@ -1286,8 +1286,10 @@ void editorProcessKeypress() {
         break;
       case ':':
         command = editorPrompt("command: %s", NULL);
-        if (command == NULL)
+        if (command == NULL) {
+          free(command);
           break;
+        }
         if (!strcmp(command, "q") || !strcmp(command, "quit")) {
           if (E.dirty) {
             free(command);
@@ -1300,56 +1302,42 @@ void editorProcessKeypress() {
 
           free(command);
           editorExit();
-          break;
         } else if (!strcmp(command, "!q") || !strcmp(command, "!quit")) {
           free(command);
           editorExit();
-          break;
         } else if (!strcmp(command, "w") || !strcmp(command, "write")) {
           editorSave();
-          break;
         } else if (!strcmp(command, "help") || !strcmp(command, "h")) {
           editorSetStatusMessage(
               "'w'/'write', '!q'/'!quit', 'wq'/'done', 'themes', 'set theme <color>'");
-          break;
         } else if (!strcmp(command, "wq") || !strcmp(command, "done")) {
           editorSave();
-          if (E.filename != NULL) {
-            free(command);
-            editorExit();
-          }
+          free(command);
+          editorExit();
           break;
         } else if (!strcmp(command, "set theme blue")) {
           E.theme = 34;
-          break;
         } else if (!strcmp(command, "set theme red")) {
           E.theme = 31;
-          break;
         } else if (!strcmp(command, "set theme green")) {
           E.theme = 32;
-          break;
         } else if (!strcmp(command, "set theme yellow")) {
           E.theme = 33;
-          break;
         } else if (!strcmp(command, "set theme magenta")) {
           E.theme = 35;
-          break;
         } else if (!strcmp(command, "set theme cyan")) {
           E.theme = 36;
-          break;
         } else if (!strcmp(command, "set theme default")) {
           E.theme = 37;
-          break;
         } else if (!strcmp(command, "themes")) {
           editorSetStatusMessage(
               "set theme <color>: blue, red, green, yellow, magenta, cyan, default");
-          break;
         }
+
         free(command);
         break;
       }
 
-      if (command != NULL) free(command);
       break;
     } else {
       editorInsertChar(c);
