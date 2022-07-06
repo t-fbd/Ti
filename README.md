@@ -106,6 +106,10 @@ TODO
 - Undo / Redo functionality
 - Rewrite C -> Rust?
 
+KNOWN ISSUES
+============
+- Search function only finds the first match in a row
+
 Contributers / Credit To
 ========================
 

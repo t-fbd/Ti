@@ -870,25 +870,25 @@ void editorSearch() {
 
 /*~~~~~~~~~~~~~~~~~~~~ append buffer ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-struct abuf {
+struct append_buf {
   char *b;
   int len;
 };
 
-#define ABUF_INIT                                                              \
+#define APPEND_BUF_INIT                                                              \
   { NULL, 0 }
 
-void abAppend(struct abuf *ab, const char *s, int len) {
-  char *app = realloc(ab->b, ab->len + len);
-  if (app == NULL)
+void abAppend(struct append_buf *ab, const char *s, int len) {
+  char *new_append = realloc(ab->b, ab->len + len);
+  if (new_append == NULL)
     return;
 
-  memcpy(&app[ab->len], s, len);
-  ab->b = app;
+  memcpy(&new_append[ab->len], s, len);
+  ab->b = new_append;
   ab->len += len;
 }
 
-void abFree(struct abuf *ab) { free(ab->b); }
+void abFree(struct append_buf *ab) { free(ab->b); }
 
 /*~~~~~~~~~~~~~~~~~~~~ output ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -916,7 +916,7 @@ void editorScroll() {
   }
 }
 
-void editorDrawRows(struct abuf *ab) {
+void editorDrawRows(struct append_buf *ab) {
   int y;
   for (y = 0; y < E.screenrows; ++y) {
     int filerow = y + E.rowoff;
@@ -994,7 +994,7 @@ void editorDrawRows(struct abuf *ab) {
   }
 }
 
-void editorDrawStatusBar(struct abuf *ab) {
+void editorDrawStatusBar(struct append_buf *ab) {
   char buf[16];
   int colorlen = snprintf(buf, sizeof(buf), "\x1b[%dm", E.theme);
   abAppend(ab, buf, colorlen);
@@ -1031,7 +1031,7 @@ void editorDrawStatusBar(struct abuf *ab) {
   abAppend(ab, "\r\n", 2);
 }
 
-void editorDrawMessageBar(struct abuf *ab) {
+void editorDrawMessageBar(struct append_buf *ab) {
   abAppend(ab, "\x1b[K", 3);
   int msglen = strlen(E.statusmsg);
   if (msglen > E.screencols)
@@ -1043,7 +1043,7 @@ void editorDrawMessageBar(struct abuf *ab) {
 
 void editorRefreshScreen() {
   editorScroll();
-  struct abuf ab = ABUF_INIT;
+  struct append_buf ab = APPEND_BUF_INIT;
   abAppend(&ab, "\x1b[?25l", 6);
   abAppend(&ab, "\x1b[H", 3);
   editorDrawRows(&ab);
