@@ -6,6 +6,9 @@ in the comments that sounds wrong or can be worded better please let me know.
 The code is littered with a ridiculous amount of comments to help me with the
 learning process.
 
+Keeping true with the original Kilo project, the SLOC for this project is aims to stay under 1024 lines.
+Currently sitting at ~1010 lines according to sloc, but theres plenty of refactoring that can be done.
+
 See original kilo source code at [github/antirez](https://github.com/antirez/kilo "Kilo Text Editor")
 
 See [Paige Ruten's](https://github.com/paigeruten "paigeruten") 'BYOE' documents [here](https://viewsourcecode.org/snaptoken/kilo/02.enteringRawMode.html "Build Your Own Editor")
@@ -21,7 +24,7 @@ Features
     - C
     - Python
     - Go
-    - Rust (Needs improvement)
+    - Rust
     - Bash (Needs improvement)
     - TODO...
 - Search functionality
@@ -94,13 +97,12 @@ TODO
 ====
 
 - Syntax highlighting:
-    - Improve Bash syntax highlighting
-    - Improve Rust syntax highlighting
     - Zsh
     - Make
     - Git
     - HTML
     - ...
+- Change file name
 - Undo / Redo functionality
 - Rewrite C -> Rust?
 

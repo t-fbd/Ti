@@ -1308,8 +1308,8 @@ void editorProcessKeypress() {
         } else if (!strcmp(command, "w") || !strcmp(command, "write")) {
           editorSave();
         } else if (!strcmp(command, "help") || !strcmp(command, "h")) {
-          editorSetStatusMessage(
-              "'w'/'write', '!q'/'!quit', 'wq'/'done', 'themes', 'set theme <color>'");
+          editorSetStatusMessage("'w'/'write', '!q'/'!quit', 'wq'/'done', "
+                                 "'themes', 'set theme <color>'");
         } else if (!strcmp(command, "wq") || !strcmp(command, "done")) {
           editorSave();
           free(command);
@@ -1330,8 +1330,8 @@ void editorProcessKeypress() {
         } else if (!strcmp(command, "set theme default")) {
           E.theme = 37;
         } else if (!strcmp(command, "themes")) {
-          editorSetStatusMessage(
-              "set theme <color>: blue, red, green, yellow, magenta, cyan, default");
+          editorSetStatusMessage("set theme <color>: blue, red, green, yellow, "
+                                 "magenta, cyan, default");
         }
 
         free(command);
