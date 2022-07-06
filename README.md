@@ -21,7 +21,8 @@ Features
     - C
     - Python
     - Go
-    - Bash (Unfinished)
+    - Rust (Needs improvement)
+    - Bash (Needs improvement)
     - TODO...
 - Search functionality
 - Modal editor, 2 modes - NORMAL/INSERT
@@ -77,15 +78,15 @@ TODO
 ====
 
 - Syntax highlighting:
-    - Rust
     - Improve Bash syntax highlighting
+    - Improve Rust syntax highlighting
     - Zsh
     - Make
     - Git
     - HTML
     - ...
 - Undo / Redo functionality
-- Rewrite C -> Rust
+- Rewrite C -> Rust?
 
 Contributers / Credit To
 ========================
