@@ -1,10 +1,8 @@
 Ti - A Kilo fork
 ====================================
 
-This is solely being used as a learning tool. If you notice anything 
-in the comments that sounds wrong or can be worded better please let me know. 
-The code is littered with a ridiculous amount of comments to help me with the
-learning process.
+This is solely being used as a learning tool and isn't intended to be used in lieu of a well established
+text editor.
 
 Keeping true with the original Kilo project, the SLOC for this project is aims to stay under 1024 lines.
 Currently sitting at ~1010 lines according to sloc, but theres plenty of refactoring that can be done.
@@ -13,9 +11,7 @@ See original kilo source code at [github/antirez](https://github.com/antirez/kil
 
 See [Paige Ruten's](https://github.com/paigeruten "paigeruten") 'BYOE' documents [here](https://viewsourcecode.org/snaptoken/kilo/02.enteringRawMode.html "Build Your Own Editor")
 
-Anything to do with modal operations and commands were implemented by me. Several improvements were made to much of the 
-keyboard operations in regard to UX. All other credit is entirely to Paige Ruten's "BYOE" project as well as antirez's 
-original Kilo project.
+Any advice is greatly appreciated!
 
 Features
 ========
@@ -25,7 +21,7 @@ Features
     - Python
     - Go
     - Rust
-    - Bash (Needs improvement)
+    - Bash (Needs a lot of improvement)
     - TODO...
 - Search functionality
 - Modal editor, 2 modes - NORMAL/INSERT
@@ -84,24 +80,27 @@ SETTINGS
 ========
 - TI_TAB_STOP = Tab render size
 - in editor-command: set theme <color> = Editor's "theme"
-    - 30 Black
-    - 31 Red
-    - 32 Green
-    - 33 Yellow
-    - 34 Blue
-    - 35 Magenta
-    - 36 Cyan
-    - 37 White / Default
+    - Black
+    - Red
+    - Green
+    - Yellow
+    - Blue
+    - Magenta
+    - Cyan
+    - White / Default
 
 TODO
 ====
 
 - Syntax highlighting:
+    - Javascript
     - Zsh
     - Make
     - Git
     - HTML
-    - ...
+    - etc...
+    
+- Fix search function
 - Change file name
 - Undo / Redo functionality
 - Rewrite C -> Rust?
