@@ -74,6 +74,19 @@ Keybinds
 
 - All general keybindings should work, as well as normal typing to screen
 
+SETTINGS
+========
+- TI_TAB_STOP = Tab render size
+- TI_THEME = Editor's "theme"
+    - 30 Black
+    - 31 Red
+    - 32 Green
+    - 33 Yellow
+    - 34 Blue
+    - 35 Magenta
+    - 36 Cyan
+    - 37 White / Default
+
 TODO
 ====
 
