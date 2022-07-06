@@ -27,6 +27,7 @@ Features
 - Search functionality
 - Modal editor, 2 modes - NORMAL/INSERT
 - Simple editor-command line
+- Set theme color
 
 Keybinds
 ========
@@ -68,6 +69,8 @@ Keybinds
     - 'q' or 'quit' - Quit, will prompt if unsaved changes
     - '!q' or '!quit' - Force quit
     - 'wq' or 'done' - Save and quit
+    - 'themes' - show available themes
+    - 'set theme <color>' - set theme
     - 'h' or 'help' - Help menu, currently just directs user to README
 
 #### Insert mode
@@ -77,7 +80,7 @@ Keybinds
 SETTINGS
 ========
 - TI_TAB_STOP = Tab render size
-- TI_THEME = Editor's "theme"
+- in editor-command: set theme <color> = Editor's "theme"
     - 30 Black
     - 31 Red
     - 32 Green
