@@ -27,7 +27,6 @@
 
 #define TI_QUIT_TIMES 1
 #define TI_TAB_STOP 8
-#define EDITOR_THEME 35
 
 #define CTRL_KEY(key) ((key)&0x1f)
 
@@ -104,6 +103,7 @@ struct editorConfig {
   int dirty;
   int modal;
   char *filename;
+  int theme;
   char statusmsg[80];
   time_t statusmsg_time;
   struct editorSyntax *syntax;
@@ -922,7 +922,7 @@ void editorDrawRows(struct abuf *ab) {
     int filerow = y + E.rowoff;
     if (filerow >= E.numrows) {
       char buf[16];
-      int colorlen = snprintf(buf, sizeof(buf), "\x1b[%dm", EDITOR_THEME);
+      int colorlen = snprintf(buf, sizeof(buf), "\x1b[%dm", E.theme);
       if (E.numrows == 0 && y == E.screenrows / 4) {
         char welcome[80];
         int welcomelen =
@@ -996,7 +996,7 @@ void editorDrawRows(struct abuf *ab) {
 
 void editorDrawStatusBar(struct abuf *ab) {
   char buf[16];
-  int colorlen = snprintf(buf, sizeof(buf), "\x1b[%dm", EDITOR_THEME);
+  int colorlen = snprintf(buf, sizeof(buf), "\x1b[%dm", E.theme);
   abAppend(ab, buf, colorlen);
   abAppend(ab, "\x1b[7m", 4);
   char status[80], rstatus[80];
@@ -1310,7 +1310,7 @@ void editorProcessKeypress() {
           break;
         } else if (!strcmp(command, "help") || !strcmp(command, "h")) {
           editorSetStatusMessage(
-              "'w'/'write', '!q'/'!quit', 'wq'/'done', '/' - search");
+              "'w'/'write', '!q'/'!quit', 'wq'/'done', 'themes', 'set theme <color>'");
           break;
         } else if (!strcmp(command, "wq") || !strcmp(command, "done")) {
           editorSave();
@@ -1319,11 +1319,37 @@ void editorProcessKeypress() {
             editorExit();
           }
           break;
+        } else if (!strcmp(command, "set theme blue")) {
+          E.theme = 34;
+          break;
+        } else if (!strcmp(command, "set theme red")) {
+          E.theme = 31;
+          break;
+        } else if (!strcmp(command, "set theme green")) {
+          E.theme = 32;
+          break;
+        } else if (!strcmp(command, "set theme yellow")) {
+          E.theme = 33;
+          break;
+        } else if (!strcmp(command, "set theme magenta")) {
+          E.theme = 35;
+          break;
+        } else if (!strcmp(command, "set theme cyan")) {
+          E.theme = 36;
+          break;
+        } else if (!strcmp(command, "set theme default")) {
+          E.theme = 37;
+          break;
+        } else if (!strcmp(command, "themes")) {
+          editorSetStatusMessage(
+              "set theme <color>: blue, red, green, yellow, magenta, cyan, default");
+          break;
         }
         free(command);
         break;
       }
 
+      if (command != NULL) free(command);
       break;
     } else {
       editorInsertChar(c);
@@ -1349,6 +1375,7 @@ void initEditor() {
   E.dirty = 0;
   E.modal = 1;
   E.filename = NULL;
+  E.theme = 37;
   E.statusmsg[0] = '\0';
   E.statusmsg_time = 0;
   E.syntax = NULL;
