@@ -116,15 +116,15 @@ struct editorConfig E;
 
 char *C_HL_extensions[] = {".c", ".h", ".cpp", NULL};
 char *C_HL_keywords[] = {
-    "switch",    "if",        "while",   "for",     "break",
-    "continue",  "return",    "else",    "struct",  "union",
-    "typedef",   "static",    "enum",    "class",   "case",
+    "switch",    "if",         "while",    "for",     "break",
+    "continue",  "return",     "else",     "struct",  "union",
+    "typedef",   "static",     "enum",     "class",   "case",
 
-    "int|",      "long|",     "double|", "float|",  "char|",
-    "unsigned|", "signed|",   "void|",   "#define", "#include",
+    "int|",      "long|",      "double|",  "float|",  "char|",
+    "unsigned|", "signed|",    "void|",    "#define", "#include",
 
-    "#define||",  "#endif||",   "#error||", "#if||",    "#ifdef||",
-    "#ifndef||",  "#include||", "#undef||", NULL};
+    "#define||", "#endif||",   "#error||", "#if||",   "#ifdef||",
+    "#ifndef||", "#include||", "#undef||", NULL};
 
 char *RUST_HL_extensions[] = {".rs", NULL};
 char *RUST_HL_keywords[] = {
@@ -141,9 +141,9 @@ char *RUST_HL_keywords[] = {
 
     "macro_rules|", "union|",  "'static|",
 
-    "bool||",        "char||",   "str||",     "&str",     "u8||",      "u16||",
-    "u32||",         "u64||",    "u128||",    "i8||",      "i16||",     "i32||",
-    "i64||",         "i128||",
+    "bool||",       "char||",  "str||",    "&str",     "u8||",     "u16||",
+    "u32||",        "u64||",   "u128||",   "i8||",     "i16||",    "i32||",
+    "i64||",        "i128||",
 
     "println!&",    NULL
 
@@ -493,10 +493,10 @@ int editorSyntaxToColor(int hl) {
 
   case HL_KEYWORD2:
     return 32;
-    
+
   case HL_KEYWORD3:
     return 93;
-    
+
   case HL_KEYWORD4:
     return 92;
 
@@ -985,8 +985,10 @@ void editorDrawRows(struct abuf *ab) {
           abAppend(ab, &c[j], 1);
         }
       }
-
-      abAppend(ab, "\x1b[39m", 5);
+      
+      char buf[16];
+      int colorlen = snprintf(buf, sizeof(buf), "\x1b[%dm", EDITOR_THEME);
+      abAppend(ab, buf, colorlen);
     }
 
     abAppend(ab, "\x1b[K", 3);
