@@ -27,6 +27,7 @@
 
 #define TI_TAB_STOP 8
 #define TI_QUIT_TIMES 1
+#define EDITOR_THEME 37
 
 #define CTRL_KEY(key) ((key)&0x1f)
 
@@ -60,8 +61,8 @@ enum editorHighlight {
 
 };
 
-#define HL_HIGHLIGHT_NUMBERS (1<<10)
-#define HL_HIGHLIGHT_STRINGS (1<<1)
+#define HL_HIGHLIGHT_NUMBERS (1 << 10)
+#define HL_HIGHLIGHT_STRINGS (1 << 1)
 
 /*~~~~~~~~~~~~~~~~~~~~ data ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -74,7 +75,6 @@ struct editorSyntax {
   char *multi_line_comment_start;
   char *multi_line_comment_end;
   int flags;
-
 };
 
 typedef struct erow {
@@ -112,117 +112,82 @@ struct editorConfig E;
 
 /*~~~~~~~~~~~~~~~~~~~~ filetypes ~~~~~~~~~~~~~~~~~~~*/
 
-char *C_HL_extensions[] = { ".c", ".h", ".cpp", NULL};
+char *C_HL_extensions[] = {".c", ".h", ".cpp", NULL};
 char *C_HL_keywords[] = {
-  //keywords
-  "switch", "if", "while", "for", "break", "continue", "return", "else",
-  "struct", "union", "typedef", "static", "enum", "class", "case",
+    "switch",    "if",        "while",   "for",     "break",
+    "continue",  "return",    "else",    "struct",  "union",
+    "typedef",   "static",    "enum",    "class",   "case",
 
-  //types
-  "int|", "long|", "double|", "float|", "char|", "unsigned|", "signed|",
-  "void|", "#define", "#include",
-  
-  //preprocessor directives
-  "#define|", "#endif|", "#error|", "#if|", "#ifdef|", "#ifndef|", "#include|", 
-  "#undef|", NULL
-};
+    "int|",      "long|",     "double|", "float|",  "char|",
+    "unsigned|", "signed|",   "void|",   "#define", "#include",
 
-char *RUST_HL_extensions[] = { ".rs", NULL};
+    "#define|",  "#endif|",   "#error|", "#if|",    "#ifdef|",
+    "#ifndef|",  "#include|", "#undef|", NULL};
+
+char *RUST_HL_extensions[] = {".rs", NULL};
 char *RUST_HL_keywords[] = {
-  //keywords
-  "as", "break", "const", "continue", "crate", "else", "enum", "extern", "false",
-  "fn", "for", "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut",
-  "pub", "ref", "return", "self", "Self", "static", "struct", "super", "trait",
-  "true", "false", "type", "unsafe", "use", "where", "while", 
+    "as",           "break",   "const",    "continue", "crate",    "else",
+    "enum",         "extern",  "false",    "fn",       "for",      "if",
+    "impl",         "in",      "let",      "loop",     "match",    "mod",
+    "move",         "mut",     "pub",      "ref",      "return",   "self",
+    "Self",         "static",  "struct",   "super",    "trait",    "true",
+    "false",        "type",    "unsafe",   "use",      "where",    "while",
 
-  //reserved keywords
-  "abstract|", "become|", "box|", "do|", "final|", "macro|", "override|", "priv|", 
-  "typeof|", "unsized|", "virtual|", "yield|", "try|",
+    "abstract|",    "become|", "box|",     "do|",      "final|",   "macro|",
+    "override|",    "priv|",   "typeof|",  "unsized|", "virtual|", "yield|",
+    "try|",
 
-  //weak keywords
-  "macro_rules|", "union|", "'static|",
+    "macro_rules|", "union|",  "'static|",
 
-  //more types
-  "bool|", "char|", "str|", "&str", "u8|", "u16|", "u32|", "u64|", "u128|", "i8|", "i16|",
-  "i32|", "i64|", "i128|",
-  
-  //macros
-  "println!|", NULL
-  
+    "bool|",        "char|",   "str|",     "&str",     "u8|",      "u16|",
+    "u32|",         "u64|",    "u128|",    "i8|",      "i16|",     "i32|",
+    "i64|",         "i128|",
+
+    "println!|",    NULL
+
 };
 
-char *PYTHON_HL_extensions[] = { ".py", NULL};
+char *PYTHON_HL_extensions[] = {".py", NULL};
 char *PYTHON_HL_keywords[] = {
-  //keywords
-  "and", "as", "assert", "break", "class", "continue", "def", "del", "elif", 
-  "else", "except", "exec", "finally", "for", "from", "global", "if", "import", 
-  "in", "is", "lambda", "not", "or", "pass", "print", "raise", "return", "try", 
-  "while", "with", "yield",
-  
-  //types
-  "buffer|", "bytearray|", "complex|", "False|", "float|", "frozenset|", "int|", 
-  "list|", "long|", "None|", "set|", "str|", "tuple|", "True|", "type|", "unicode|", 
-  "xrange|", NULL
-};
+    "and",     "as",         "assert",   "break",    "class",   "continue",
+    "def",     "del",        "elif",     "else",     "except",  "exec",
+    "finally", "for",        "from",     "global",   "if",      "import",
+    "in",      "is",         "lambda",   "not",      "or",      "pass",
+    "print",   "raise",      "return",   "try",      "while",   "with",
+    "yield",
 
-char *GO_HL_extensions[] = { ".go", NULL};
+    "buffer|", "bytearray|", "complex|", "False|",   "float|",  "frozenset|",
+    "int|",    "list|",      "long|",    "None|",    "set|",    "str|",
+    "tuple|",  "True|",      "type|",    "unicode|", "xrange|", NULL};
+
+char *GO_HL_extensions[] = {".go", NULL};
 char *GO_HL_keywords[] = {
-  //keywords
-  "if", "for", "range", "while", "defer", "switch", "case", "else", "func", 
-  "package", "import", "type", "struct", "import", "const", "var",
-  
-  //types
-  "nil|", "true|", "false|", "error|", "err|", "int|", "int32|", "int64|", "uint|", 
-  "uint32|", "uint64|", "string|", "bool|", NULL
-};
+    "if",     "for",   "range",   "while",   "defer",   "switch", "case",
+    "else",   "func",  "package", "import",  "type",    "struct", "import",
+    "const",  "var",
 
-char *BASH_HL_extensions[] = { ".sh", NULL};
+    "nil|",   "true|", "false|",  "error|",  "err|",    "int|",   "int32|",
+    "int64|", "uint|", "uint32|", "uint64|", "string|", "bool|",  NULL};
+
+char *BASH_HL_extensions[] = {".sh", NULL};
 char *BASH_HL_keywords[] = {
-  //reserved words
-  "!", "case", "coproc", "do", "done", "elif", "else", "esac", "fi", "for", 
-  "function", "if", "in", "select", "then", "until", "while", "{", "}", 
-  "time", "[[", "]]",
+    "!",     "case", "coproc",   "do",   "done", "elif",   "else", "esac",
+    "fi",    "for",  "function", "if",   "in",   "select", "then", "until",
+    "while", "{",    "}",        "time", "[[",   "]]",
 
-  //commands
-  "$|", NULL
-};
+    "$|",    NULL};
 
 struct editorSyntax HLDB[] = {
-  {
-    "C",
-    C_HL_extensions,
-    C_HL_keywords,
-    "//", "/*", "*/",
-    HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS
-  },
-  {
-   "PYTHON",
-    PYTHON_HL_extensions,
-    PYTHON_HL_keywords,
-    "#", "\"\"\"", "\"\"\"",
-    HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS
-  },
-  {
-   "GO",
-    GO_HL_extensions,
-    GO_HL_keywords,
-    "//", "/*", "*/",
-    HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS
-  },
-  {
-   "BASH",
-    BASH_HL_extensions,
-    BASH_HL_keywords,
-    "#", "#!", "sh",
-    HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS
-  },
-  {
-   "RUST",
-    RUST_HL_extensions,
-    RUST_HL_keywords,
-    "//", "/*", "*/",
-    HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS
-  },
+    {"C", C_HL_extensions, C_HL_keywords, "//", "/*", "*/",
+     HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
+    {"PYTHON", PYTHON_HL_extensions, PYTHON_HL_keywords, "#", "\"\"\"",
+     "\"\"\"", HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
+    {"GO", GO_HL_extensions, GO_HL_keywords, "//", "/*", "*/",
+     HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
+    {"BASH", BASH_HL_extensions, BASH_HL_keywords, "#", "#!", "sh",
+     HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
+    {"RUST", RUST_HL_extensions, RUST_HL_keywords, "//", "/*", "*/",
+     HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
 };
 
 #define HLDB_ENTRIES (sizeof(HLDB) / sizeof(HLDB[0]))
@@ -381,11 +346,12 @@ int is_seperator(int c) {
 void editorUpdateSyntax(erow *row) {
   row->hl = realloc(row->hl, row->rsize);
   memset(row->hl, HL_NORMAL, row->size);
-  
-  if (E.syntax == NULL) return;
-  
+
+  if (E.syntax == NULL)
+    return;
+
   char **keywords = E.syntax->keywords;
-  
+
   char *scs = E.syntax->single_line_comment_start;
   char *mcs = E.syntax->multi_line_comment_start;
   char *mce = E.syntax->multi_line_comment_end;
@@ -397,12 +363,11 @@ void editorUpdateSyntax(erow *row) {
   int prev_sep = 1;
   int in_string = 0;
   int in_comment = (row->idx > 0 && E.row[row->idx - 1].hl_open_comment);
-  
+
   int i = 0;
   while (i < row->rsize) {
     char c = row->render[i];
     unsigned char prev_hl = (i > 0) ? row->hl[i - 1] : HL_NORMAL;
-    
 
     if (scs_len && !in_string && !in_comment) {
       if (!strncmp(&row->render[i], scs, scs_len)) {
@@ -440,7 +405,8 @@ void editorUpdateSyntax(erow *row) {
           i += 2;
           continue;
         }
-        if (c == in_string) in_string = 0;
+        if (c == in_string)
+          in_string = 0;
         i++;
         prev_sep = 1;
         continue;
@@ -453,9 +419,9 @@ void editorUpdateSyntax(erow *row) {
         }
       }
     }
-    
+
     if (E.syntax->flags & HL_HIGHLIGHT_NUMBERS) {
-      if ((isdigit(c) && (prev_sep || prev_hl == HL_NUMBER)) || 
+      if ((isdigit(c) && (prev_sep || prev_hl == HL_NUMBER)) ||
           (c == '.' && prev_hl == HL_NUMBER)) {
         row->hl[i] = HL_NUMBER;
         i++;
@@ -463,14 +429,15 @@ void editorUpdateSyntax(erow *row) {
         continue;
       }
     }
-    
+
     if (prev_sep) {
       int j;
       for (j = 0; keywords[j]; ++j) {
         int klen = strlen(keywords[j]);
         int kw2 = keywords[j][klen - 1] == '|';
-        if (kw2) klen--;
-        
+        if (kw2)
+          klen--;
+
         if (!strncmp(&row->render[i], keywords[j], klen) &&
             is_seperator(row->render[i + klen])) {
 
@@ -489,7 +456,7 @@ void editorUpdateSyntax(erow *row) {
     prev_sep = is_seperator(c);
     i++;
   }
-  
+
   int changed = (row->hl_open_comment != in_comment);
   row->hl_open_comment = in_comment;
   if (changed && row->idx + 1 < E.numrows)
@@ -508,7 +475,7 @@ int editorSyntaxToColor(int hl) {
 
   case HL_KEYWORD2:
     return 32;
-    
+
   case HL_STRING:
     return 35;
 
@@ -525,27 +492,28 @@ int editorSyntaxToColor(int hl) {
 
 void editorSelectSyntaxHighlighting() {
   E.syntax = NULL;
-  if (E.filename == NULL) return;
-  
+  if (E.filename == NULL)
+    return;
+
   char *ext = strchr(E.filename, '.');
-  
+
   for (unsigned int j = 0; j < HLDB_ENTRIES; ++j) {
     struct editorSyntax *s = &HLDB[j];
     unsigned int i = 0;
     while (s->filematch[i]) {
       int is_ext = (s->filematch[i][0] == '.');
-      if((is_ext && ext && !strcmp(ext, s->filematch[i])) ||
+      if ((is_ext && ext && !strcmp(ext, s->filematch[i])) ||
           (!is_ext && strstr(E.filename, s->filematch[i]))) {
         E.syntax = s;
-        
+
         int filerow;
         for (filerow = 0; filerow < E.numrows; ++filerow) {
           editorUpdateSyntax(&E.row[filerow]);
         }
-        
+
         return;
       }
-      
+
       i++;
     }
   }
@@ -612,10 +580,11 @@ void editorInsertRow(int at, char *s, size_t len) {
 
   E.row = realloc(E.row, sizeof(erow) * (E.numrows + 1));
   memmove(&E.row[at + 1], &E.row[at], sizeof(erow) * (E.numrows - at));
-  for (int j = at + 1; j <= E.numrows; ++j) E.row[j].idx++;
+  for (int j = at + 1; j <= E.numrows; ++j)
+    E.row[j].idx++;
 
   E.row[at].idx = at;
-  
+
   E.row = realloc(E.row, sizeof(erow) * (E.numrows + 1));
   E.row[at].size = len;
   E.row[at].chars = malloc(len + 1);
@@ -642,7 +611,8 @@ void editorDelRow(int at) {
     return;
   editorFreeRow(&E.row[at]);
   memmove(&E.row[at], &E.row[at + 1], sizeof(erow) * (E.numrows - at - 1));
-  for (int j = at; j < E.numrows - 1; ++j) E.row[j].idx--;
+  for (int j = at; j < E.numrows - 1; ++j)
+    E.row[j].idx--;
   E.numrows--;
   E.dirty++;
 }
@@ -746,7 +716,7 @@ char *editorRowsToString(int *buflen) {
 void editorOpen(char *filename) {
   free(E.filename);
   E.filename = strdup(filename);
-  
+
   editorSelectSyntaxHighlighting();
 
   FILE *fp = fopen(filename, "r");
@@ -881,7 +851,8 @@ struct abuf {
   int len;
 };
 
-#define ABUF_INIT { NULL, 0 }
+#define ABUF_INIT                                                              \
+  { NULL, 0 }
 
 void abAppend(struct abuf *ab, const char *s, int len) {
   char *app = realloc(ab->b, ab->len + len);
@@ -926,7 +897,9 @@ void editorDrawRows(struct abuf *ab) {
   for (y = 0; y < E.screenrows; ++y) {
     int filerow = y + E.rowoff;
     if (filerow >= E.numrows) {
-      if (E.numrows == 0 && y == 0) {
+      char buf[16];
+      int colorlen = snprintf(buf, sizeof(buf), "\x1b[%dm", EDITOR_THEME);
+      if (E.numrows == 0 && y == E.screenrows / 4) {
         char welcome[80];
         int welcomelen =
             snprintf(welcome, sizeof(welcome), "Ti -- version %s", TI_VERSION);
@@ -936,14 +909,15 @@ void editorDrawRows(struct abuf *ab) {
 
         int padding = (E.screencols - welcomelen) / 2;
         if (padding) {
+          abAppend(ab, buf, colorlen);
           abAppend(ab, "~", 1);
           padding--;
         }
         while (padding--)
           abAppend(ab, " ", 1);
-
         abAppend(ab, welcome, welcomelen);
       } else {
+        abAppend(ab, buf, colorlen);
         abAppend(ab, "~", 1);
       }
     } else {
@@ -1003,10 +977,11 @@ void editorDrawStatusBar(struct abuf *ab) {
                      E.filename ? E.filename : "[SCRATCH]", E.numrows,
                      E.dirty ? "(+)" : "");
   float perc = ((float)E.cy + 1) / ((float)E.numrows) * 100;
-  int rlen = snprintf(rstatus, sizeof(rstatus), "%s | L %d:%d %.0f%%",
-                  E.syntax ? E.syntax->filetype : "filetype syntax unavailable",
-                  E.cy + 1 >= E.numrows ? E.numrows : E.cy + 1, E.cx + 1,
-                  perc > 0 || perc <= 100 ? perc : 0);
+  int rlen =
+      snprintf(rstatus, sizeof(rstatus), "%s | L %d:%d %.0f%%",
+               E.syntax ? E.syntax->filetype : "filetype syntax unavailable",
+               E.cy + 1 >= E.numrows ? E.numrows : E.cy + 1, E.cx + 1,
+               perc > 0 || perc <= 100 ? perc : 0);
   if (E.cy + 1 > E.numrows) {
     rlen = snprintf(rstatus, sizeof(rstatus), "L %s", "EOF");
   }
@@ -1350,7 +1325,7 @@ void initEditor() {
   E.statusmsg[0] = '\0';
   E.statusmsg_time = 0;
   E.syntax = NULL;
-  
+
   if (getWindowSize(&E.screenrows, &E.screencols) == -1)
     die("getWindowSize");
   E.screenrows -= 2;
