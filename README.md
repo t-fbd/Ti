@@ -62,7 +62,8 @@ Keybinds
 
 - **x** : delete character under cursor
 - **dd** : delete current row
-- **dw** : delete current word
+- **dw** : delete from current char to end of word
+- **dx** : delete current word
 - **ENTER** : insert row
 
 - **:** : open editor command line

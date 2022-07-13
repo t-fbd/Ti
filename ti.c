@@ -1261,6 +1261,10 @@ void editorExit() {
 void editorProcessKeypress() {
   static int quit_times = TI_QUIT_TIMES;
   int c = editorReadKey();
+  if (!(c == 'x' || c == 'd' || c == 'w' || c == 'W')) {
+    editorSetStatusMessage("deletetion cancelled");
+    E.delete = 0;
+  }
   switch (c) {
   case '\r':
     if (quit_times == 0) {
@@ -1312,10 +1316,6 @@ void editorProcessKeypress() {
       E.modal = 1;
       editorSetStatusMessage("NORMAL MODE");
     }
-    if (E.delete) {
-      E.delete = 0;
-      editorSetStatusMessage("deltetion cancelled");
-    }
     break;
   default:
     if (E.modal) {
@@ -1342,17 +1342,17 @@ void editorProcessKeypress() {
         break;
       case 'w':
         if (E.delete == 1) {
-          editorMoveCursor(WORD_LAST);
-          editorMoveCursor(WORD_NEXT);
           editorMoveCursor(DEL_WORD_NEXT);
           E.delete = 0;
+        } else { 
+          editorMoveCursor(WORD_NEXT);
         }
-        editorMoveCursor(WORD_NEXT);
         break;
       case 'W':
         editorMoveCursor(WORD_LAST);
         break;
       case 'd':
+        editorSetStatusMessage("deletetion enabled");
         if (E.delete == 0) {
           E.delete = 1;
           break;
@@ -1362,8 +1362,15 @@ void editorProcessKeypress() {
           break;
         }
       case 'x':
-        editorMoveCursor(ARROW_RIGHT);
-        editorDelChar();
+        if (E.delete == 1) {
+          editorMoveCursor(WORD_LAST);
+          editorMoveCursor(ARROW_RIGHT);
+          editorMoveCursor(DEL_WORD_NEXT);
+          E.delete = 0;
+        } else {
+          editorMoveCursor(ARROW_RIGHT);
+          editorDelChar();
+        }
         break;
       case ':':
         command = editorPrompt("command: %s", NULL);
@@ -1394,7 +1401,7 @@ void editorProcessKeypress() {
         } else if (!strcmp(command, "help") || !strcmp(command, "h")) {
           editorSetStatusMessage(
               "'w'/'write', '!q'/'!quit', 'wq'/'done', "
-              "'themes', 'set theme <color>'");
+              "'themes', 'set theme +color'");
         } else if (!strcmp(command, "wq") || !strcmp(command, "done")) {
           editorSave();
           free(command);
