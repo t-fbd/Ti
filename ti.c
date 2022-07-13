@@ -119,11 +119,15 @@ struct editorConfig E;
 
 // kw1 = default, kw2 = |, kw3 = ||, kw4 = &
 
-char *C_HL_extensions[] = {".c", ".h", ".cpp", NULL};
+char *C_HL_extensions[] = {".c", ".h", ".cpp", ".hpp", NULL};
 char *C_HL_keywords[] = {
     "switch",    "if",         "while",    "for",    "break",
     "continue",  "return",     "else",     "struct", "union",
     "typedef",   "static",     "enum",     "class",  "case",
+    "do", "while", "sizeof",
+    
+    "auto&", "extern&", "goto&", "register&", "union&", 
+    "volatile&",
 
     "int|",      "long|",      "double|",  "float|", "char|",
     "unsigned|", "signed|",    "void|",

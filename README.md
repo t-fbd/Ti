@@ -13,6 +13,11 @@ See [Paige Ruten's](https://github.com/paigeruten "paigeruten") 'BYOE' documents
 
 Any advice is greatly appreciated!
 
+Asciicast
+=========
+
+<script id="asciicast-mQMB04FYcA8uVQxpkHmbkgl4L" src="https://asciinema.org/a/mQMB04FYcA8uVQxpkHmbkgl4L.js" async></script>
+
 Features
 ========
 
