@@ -13,7 +13,11 @@ See [Paige Ruten's](https://github.com/paigeruten "paigeruten") 'BYOE' documents
 
 Any advice is greatly appreciated!
 
+cloc --diff  ti.c compared with [kilo-src by paigeruten](https://github.com/snaptoken/kilo-src/blob/master/kilo.c)
 ![image](https://user-images.githubusercontent.com/71906074/178766002-fd8a31a8-7931-4429-b1c1-42996605b34a.png)
+
+cloc --diff  ti.c compared with [kilo by antirez](https://github.com/antirez/kilo/blob/master/kilo.c)
+![image](https://user-images.githubusercontent.com/71906074/178768579-571798d0-8f82-474f-b34c-c49e28a734b5.png)
 
 Asciicast
 =========
