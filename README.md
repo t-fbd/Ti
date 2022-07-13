@@ -125,28 +125,28 @@ CLOC RESULTS
 
 diff against paigerutens [kilo-tut source](https://github.com/snaptoken/kilo-src/blob/master/kilo.c)
 github.com/AlDanial/cloc v 1.94  T=0.03 s (34.6 files/s, 46928.2 lines/s)
--------------------------------------------------------------------------------
-Language                     files          blank        comment           code
--------------------------------------------------------------------------------
-SUM:
- same                            0              0            110            539
- modified                        1              0             40            202
- added                           0             50             39            359
- removed                         0              0              0             16
--------------------------------------------------------------------------------
+
+|Language                   |  files       |    blank      |   comment      |      code |
+|:-------------------------:|:------------:|:-------------:|:--------------:|:---------:|
+|SUM:                       |              |               |                |           |
+| same                      |      0       |        0      |       110      |       539 |
+| modified                  |      1       |        0      |        40      |       202 |
+| added                     |      0       |       50      |        39      |       359 |
+| removed                   |      0       |        0      |         0      |        16 |
+
 
 diff against original [kilo](https://github.com/antirez/kilo/blob/master/kilo.c)
 
 github.com/AlDanial/cloc v 1.94  T=0.03 s (30.4 files/s, 56173.0 lines/s)
--------------------------------------------------------------------------------
-Language                     files          blank        comment           code
--------------------------------------------------------------------------------
-SUM:
- same                            0              0              1             87
- modified                        1              0            103            509
- added                           0             82             85            504
- removed                         0              0             89            390
--------------------------------------------------------------------------------
+
+|Language                   |  files       |   blank       | comment        |  code  |
+|:-------------------------:|:------------:|:-------------:|:--------------:|:------:|
+|SUM:                       |              |               |                |        |
+| same                      |      0       |       0       |       1        |    87  |
+| modified                  |      1       |       0       |     103        |   509  |
+| added                     |      0       |      82       |      85        |   504  |
+| removed                   |      0       |       0       |      89        |   390  |
+
 
 
 CONTRIBUTERS / CREDIT TO
