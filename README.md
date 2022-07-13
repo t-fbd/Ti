@@ -13,18 +13,12 @@ See [Paige Ruten's](https://github.com/paigeruten "paigeruten") 'BYOE' documents
 
 Any advice is greatly appreciated!
 
-cloc --diff  ti.c compared with [kilo-src by paigeruten](https://github.com/snaptoken/kilo-src/blob/master/kilo.c)
-![image](https://user-images.githubusercontent.com/71906074/178766002-fd8a31a8-7931-4429-b1c1-42996605b34a.png)
-
-cloc --diff  ti.c compared with [kilo by antirez](https://github.com/antirez/kilo/blob/master/kilo.c)
-![image](https://user-images.githubusercontent.com/71906074/178768579-571798d0-8f82-474f-b34c-c49e28a734b5.png)
-
-Asciicast
+ASCIICAST
 =========
 
 [![asciicast](https://asciinema.org/a/mQMB04FYcA8uVQxpkHmbkgl4L.svg)](https://asciinema.org/a/mQMB04FYcA8uVQxpkHmbkgl4L)
 
-Features
+FEATURES
 ========
 
 - Simple Syntax Highlighting for:
@@ -40,7 +34,7 @@ Features
 - Simple editor-command line
 - Set theme color
 
-Keybinds
+KEYBINDS
 ========
 
 #### General bindings
@@ -126,7 +120,36 @@ KNOWN ISSUES
 - Del current word will go to end of next word when
 deleting a string of spaces/tabs
 
-Contributers / Credit To
+CLOC RESULTS
+============
+
+diff against paigerutens [kilo-tut source](https://github.com/snaptoken/kilo-src/blob/master/kilo.c)
+github.com/AlDanial/cloc v 1.94  T=0.03 s (34.6 files/s, 46928.2 lines/s)
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+SUM:
+ same                            0              0            110            539
+ modified                        1              0             40            202
+ added                           0             50             39            359
+ removed                         0              0              0             16
+-------------------------------------------------------------------------------
+
+diff against original [kilo](https://github.com/antirez/kilo/blob/master/kilo.c)
+
+github.com/AlDanial/cloc v 1.94  T=0.03 s (30.4 files/s, 56173.0 lines/s)
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+SUM:
+ same                            0              0              1             87
+ modified                        1              0            103            509
+ added                           0             82             85            504
+ removed                         0              0             89            390
+-------------------------------------------------------------------------------
+
+
+CONTRIBUTERS / CREDIT TO
 ========================
 
 - tairenfd
