@@ -16,7 +16,7 @@ Any advice is greatly appreciated!
 Asciicast
 =========
 
-<script id="asciicast-mQMB04FYcA8uVQxpkHmbkgl4L" src="https://asciinema.org/a/mQMB04FYcA8uVQxpkHmbkgl4L.js" async></script>
+[![asciicast](https://asciinema.org/a/mQMB04FYcA8uVQxpkHmbkgl4L.svg)](https://asciinema.org/a/mQMB04FYcA8uVQxpkHmbkgl4L)
 
 Features
 ========
