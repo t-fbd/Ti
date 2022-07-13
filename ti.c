@@ -793,7 +793,8 @@ void editorOpen(char *filename) {
 void editorSave() {
 
   if (E.new == 1) {
-    char *tmpfilename = E.filename;
+    char tmpfilename[strlen(E.filename) + 1];
+    strcpy(tmpfilename, E.filename);
     E.filename = editorPrompt("Save as: %s (ESC to cancel)", NULL);
     E.new = 0;
     if (E.filename == NULL || E.filename == tmpfilename) {

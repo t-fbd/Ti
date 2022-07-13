@@ -116,6 +116,11 @@ TODO
 
 KNOWN ISSUES
 ============
+- When saving an existing file as a new file, it results in memory error. Valgrind
+states 'definitely lost block' equal to the amount of data input since new save. All 
+data is successfully saved to new file, however nothing is written to original file 
+after new file opened. Error is from previous file not being written to, resulting in 
+'lost memory'.
 - Search function only finds the first match in a row
 - Del current word will go to end of next word when
 deleting a string of spaces/tabs
