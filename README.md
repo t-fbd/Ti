@@ -4,8 +4,8 @@ Ti - A Kilo fork
 This is solely being used as a learning tool and isn't intended to be used in lieu of a well established
 text editor.
 
-Keeping true with the original Kilo project, the SLOC for this project is aims to stay under 1024 lines.
-Currently sitting at ~1010 lines according to sloc, but theres plenty of refactoring that can be done.
+Keeping true with the original Kilo project, the SLOC for this project aims to stay under 1024 lines.
+Currently sitting at ~1090 lines according to sloc, but theres plenty of refactoring that can be done.
 
 See original kilo source code at [github/antirez](https://github.com/antirez/kilo "Kilo Text Editor")
 
@@ -101,6 +101,9 @@ TODO
     - HTML
     - etc...
 - Scroll buffer
+- Refactoring of deletion functionalities
+- Refactor binds
+- Refactor suntax(?)
 - Fix search function (same row functionality)
 - Undo / Redo functionality
 - Rewrite C -> Rust?
