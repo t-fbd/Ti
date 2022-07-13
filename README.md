@@ -13,6 +13,8 @@ See [Paige Ruten's](https://github.com/paigeruten "paigeruten") 'BYOE' documents
 
 Any advice is greatly appreciated!
 
+![image](https://user-images.githubusercontent.com/71906074/178766002-fd8a31a8-7931-4429-b1c1-42996605b34a.png)
+
 Asciicast
 =========
 
