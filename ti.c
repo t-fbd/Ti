@@ -27,7 +27,7 @@
 
 #define TI_QUIT_TIMES 1
 #define TI_TAB_STOP 8
-
+#define ESC '\x1b'
 #define CTRL_KEY(key) ((key)&0x1f)
 
 enum editorKey {
@@ -43,6 +43,7 @@ enum editorKey {
   PAGE_UP,
   PAGE_DOWN,
   WORD_NEXT,
+  DEL_WORD_NEXT,
   WORD_LAST
 
 };
@@ -102,6 +103,8 @@ struct editorConfig {
   erow *row;
   int dirty;
   int modal;
+  int new;
+  int delete;
   char *filename;
   int theme;
   char statusmsg[80];
@@ -246,18 +249,18 @@ int editorReadKey() {
       die("read");
   }
 
-  if (c == '\x1b') {
+  if (c == ESC) {
     char seq[3];
 
     if (read(STDIN_FILENO, &seq[0], 1) != 1)
-      return '\x1b';
+      return ESC;
     if (read(STDIN_FILENO, &seq[1], 1) != 1)
-      return '\x1b';
+      return ESC;
 
     if (seq[0] == '[') {
       if (seq[1] >= '0' && seq[1] <= '9') {
         if (read(STDIN_FILENO, &seq[2], 1) != 1)
-          return '\x1b';
+          return ESC;
         if (seq[2] == '~') {
           switch (seq[1]) {
           case '1':
@@ -301,7 +304,7 @@ int editorReadKey() {
       }
     }
 
-    return '\x1b';
+    return ESC;
   } else {
     return c;
   }
@@ -322,7 +325,7 @@ int getCursorPosition(int *rows, int *cols) {
   }
   buf[i] = '\0';
 
-  if (buf[0] != '\x1b' || buf[1] != '[')
+  if (buf[0] != ESC || buf[1] != '[')
     return -1;
   if (sscanf(&buf[2], "%d;%d", rows, cols) != 2)
     return -1;
@@ -639,6 +642,7 @@ void editorDelRow(int at) {
     E.row[j].idx--;
   E.numrows--;
   E.dirty++;
+  E.cx = 0;
 }
 
 void editorRowInsertChar(erow *row, int at, int c) {
@@ -763,7 +767,17 @@ void editorOpen(char *filename) {
 
 void editorSave() {
 
-  if (E.filename == NULL) {
+  if (E.new == 1) {
+    char *tmpfilename = E.filename;
+    E.filename = editorPrompt("Save as: %s (ESC to cancel)", NULL);
+    E.new = 0;
+    if (E.filename == NULL || E.filename == tmpfilename) {
+      editorSetStatusMessage("Save aborted");
+      return;
+    }
+    
+    editorSelectSyntaxHighlighting();
+  } else if (E.filename == NULL) {
     E.filename = editorPrompt("Save as: %s (ESC to cancel)", NULL);
     if (E.filename == NULL) {
       editorSetStatusMessage("Save aborted");
@@ -808,7 +822,7 @@ void editorSearchCallback(char *query, int key) {
     saved_hl = NULL;
   }
 
-  if (key == '\r' || key == '\x1b') {
+  if (key == '\r' || key == ESC) {
     last_match = -1;
     direction = 1;
     return;
@@ -1080,7 +1094,7 @@ char *editorPrompt(char *prompt, void (*callback)(char *, int)) {
     if (c == DEL_KEY || c == CTRL_KEY('h') || c == BACKSPACE) {
       if (buflen != 0)
         buf[--buflen] = '\0';
-    } else if (c == '\x1b') {
+    } else if (c == ESC) {
       editorSetStatusMessage("");
       if (callback)
         callback(buf, c);
@@ -1131,13 +1145,38 @@ void editorMoveCursor(int key) {
     break;
   case WORD_NEXT:
     if (row && E.cx < row->size) {
-      while (row && E.cx < row->size && row->render[E.cx] != ' ' &&
+      if (row->render[E.cx] != ' ' &&
              row->render[E.cx] != TI_TAB_STOP) {
-        E.cx++;
+        while (row && E.cx < row->size && row->render[E.cx] != ' ' &&
+               row->render[E.cx] != TI_TAB_STOP) {
+          E.cx++;
+        }
+      } else {
+        while ((row && E.cx < row->size && row->render[E.cx] == ' ') ||
+               (row && E.cx < row->size && row->render[E.cx] == TI_TAB_STOP)) {
+          E.cx++;
+        }
       }
-      while ((row && E.cx < row->size && row->render[E.cx] == ' ') ||
-             (row && E.cx < row->size && row->render[E.cx] == TI_TAB_STOP)) {
-        E.cx++;
+    } else if (row && E.cx == row->size) {
+      E.cy++;
+      E.cx = 0;
+    }
+    break;
+  case DEL_WORD_NEXT:
+    if (row && E.cx < row->size) {
+      if (row->render[E.cx] != ' ' &&
+             row->render[E.cx] != TI_TAB_STOP) {
+        while (row && E.cx < row->size && row->render[E.cx] != ' ' &&
+               row->render[E.cx] != TI_TAB_STOP) {
+          editorMoveCursor(ARROW_RIGHT);
+          editorDelChar();
+        }
+      } else {
+        while ((row && E.cx < row->size && row->render[E.cx] == ' ') ||
+               (row && E.cx < row->size && row->render[E.cx] == TI_TAB_STOP)) {
+          editorMoveCursor(ARROW_RIGHT);
+          editorDelChar();
+        }
       }
     } else if (row && E.cx == row->size) {
       E.cy++;
@@ -1146,13 +1185,17 @@ void editorMoveCursor(int key) {
     break;
   case WORD_LAST:
     if (E.cx != 0) {
-      while (E.cx != 0 && row->render[E.cx] != ' ' &&
+      if (row->render[E.cx] != ' ' &&
              row->render[E.cx] != TI_TAB_STOP) {
-        E.cx--;
-      }
-      while ((E.cx != 0 && row->render[E.cx] == ' ') ||
-             (E.cx != 0 && row->render[E.cx] == TI_TAB_STOP)) {
-        E.cx--;
+        while (E.cx != 0 && row->render[E.cx] != ' ' &&
+               row->render[E.cx] != TI_TAB_STOP) {
+          E.cx--;
+        }
+      } else {
+        while ((E.cx != 0 && row->render[E.cx] == ' ') ||
+               (E.cx != 0 && row->render[E.cx] == TI_TAB_STOP)) {
+            E.cx--;
+        }
       }
     } else if (E.cy > 0) {
       E.cy--;
@@ -1242,10 +1285,14 @@ void editorProcessKeypress() {
     editorMoveCursor(c);
     break;
   case CTRL_KEY('l'):
-  case '\x1b':
+  case ESC:
     if (!E.modal) {
       E.modal = 1;
       editorSetStatusMessage("NORMAL MODE");
+    }
+    if (E.delete) {
+      E.delete = 0;
+      editorSetStatusMessage("deltetion cancelled");
     }
     break;
   default:
@@ -1272,17 +1319,29 @@ void editorProcessKeypress() {
         editorMoveCursor(ARROW_UP);
         break;
       case 'w':
+        if (E.delete == 1) {
+          editorMoveCursor(WORD_LAST);
+          editorMoveCursor(WORD_NEXT);
+          editorMoveCursor(DEL_WORD_NEXT);
+          E.delete = 0;
+        }
         editorMoveCursor(WORD_NEXT);
         break;
       case 'W':
         editorMoveCursor(WORD_LAST);
         break;
       case 'd':
+        if (E.delete == 0) {
+          E.delete = 1;
+          break;
+        } else {
+          editorDelRow(E.cy);
+          E.delete = 0;
+          break;
+        }
+      case 'x':
         editorMoveCursor(ARROW_RIGHT);
         editorDelChar();
-        break;
-      case 'D':
-        editorDelRow(E.cy);
         break;
       case ':':
         command = editorPrompt("command: %s", NULL);
@@ -1307,8 +1366,11 @@ void editorProcessKeypress() {
           editorExit();
         } else if (!strcmp(command, "w") || !strcmp(command, "write")) {
           editorSave();
+        } else if (!strcmp(command, "w new") || !strcmp(command, "write new")) {
+          E.new = 1;
+          editorSave();
         } else if (!strcmp(command, "help") || !strcmp(command, "h")) {
-          editorSetStatusMessage("'w'/'write', '!q'/'!quit', 'wq'/'done', "
+          editorSetStatusMessage("'w'/'write'('w' new to rename), '!q'/'!quit', 'wq'/'done', "
                                  "'themes', 'set theme <color>'");
         } else if (!strcmp(command, "wq") || !strcmp(command, "done")) {
           editorSave();
@@ -1362,6 +1424,8 @@ void initEditor() {
   E.row = NULL;
   E.dirty = 0;
   E.modal = 1;
+  E.new = 0;
+  E.delete = 0;
   E.filename = NULL;
   E.theme = 37;
   E.statusmsg[0] = '\0';

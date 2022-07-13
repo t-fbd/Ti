@@ -59,8 +59,9 @@ Keybinds
 - **w** : next word
 - **W** : previous word
 
-- **d** : delete character under cursor
-- **D** : delete current row
+- **x** : delete character under cursor
+- **dd** : delete current row
+- **dw** : delete current word
 - **ENTER** : insert row
 
 - **:** : open editor command line
@@ -99,15 +100,16 @@ TODO
     - Git
     - HTML
     - etc...
-    
-- Fix search function
-- Change file name
+- Scroll buffer
+- Fix search function (same row functionality)
 - Undo / Redo functionality
 - Rewrite C -> Rust?
 
 KNOWN ISSUES
 ============
 - Search function only finds the first match in a row
+- Del current word will go to end of next word when
+deleting a string of spaces/tabs
 
 Contributers / Credit To
 ========================
