@@ -117,17 +117,36 @@ struct editorConfig E;
 
 /*~~~~~~~~~~~~~~~~~~~~ filetypes ~~~~~~~~~~~~~~~~~~~*/
 
+// kw1 = default, kw2 = |, kw3 = ||, kw4 = &
+
 char *C_HL_extensions[] = {".c", ".h", ".cpp", NULL};
 char *C_HL_keywords[] = {
-    "switch",    "if",         "while",    "for",     "break",
-    "continue",  "return",     "else",     "struct",  "union",
-    "typedef",   "static",     "enum",     "class",   "case",
+    "switch",    "if",         "while",    "for",    "break",
+    "continue",  "return",     "else",     "struct", "union",
+    "typedef",   "static",     "enum",     "class",  "case",
 
-    "int|",      "long|",      "double|",  "float|",  "char|",
-    "unsigned|", "signed|",    "void|",    "#define", "#include",
+    "int|",      "long|",      "double|",  "float|", "char|",
+    "unsigned|", "signed|",    "void|",
 
-    "#define||", "#endif||",   "#error||", "#if||",   "#ifdef||",
+    "#define||", "#endif||",   "#error||", "#if||",  "#ifdef||",
     "#ifndef||", "#include||", "#undef||", NULL};
+
+char *JS_HL_extensions[] = {".js", NULL};
+char *JS_HL_keywords[] = {
+    "await", "break", "case", "catch", "class", "const", "continue", "debugger", 
+    "default", "delete", "do", "else", "enum", "export", "extends", "false", "finally", 
+    "for", "function", "if", "implements", "import", "in", "instanceof", "interface", 
+    "let", "new", "null", "package", "private", "protected", "public", "return", 
+    "super", "switch", "static", "this", "throw", "try", "true", "typeof", "var", 
+    "void", "while", "with", "yield",
+
+    "str|", "arr|", "Object|", "set|", "document|",
+  
+    "includes||", "style||", "value||", "addEventListener||", "querySelector||", 
+    "indexOf||", "split||", "concat||", "replace||", "trim||", "toLowerCase||", 
+    "toUpperCase||", "forEach||", "length||", "map||", "pop||", "slice||", "join||", 
+    "keys||", "value||", "style||", "size||", "add||", "delete||", "has||", "backgroundColor||", 
+    "textAlign||", "fontWeight||", "text||", "preventDefault||", NULL};
 
 char *RUST_HL_extensions[] = {".rs", NULL};
 char *RUST_HL_keywords[] = {
@@ -148,31 +167,32 @@ char *RUST_HL_keywords[] = {
     "u32||",        "u64||",   "u128||",   "i8||",     "i16||",    "i32||",
     "i64||",        "i128||",
 
-    "println!&",    NULL
-
-};
+    "println!&",    NULL};
 
 char *PYTHON_HL_extensions[] = {".py", NULL};
 char *PYTHON_HL_keywords[] = {
-    "and",     "as",         "assert",   "break",    "class",   "continue",
-    "def",     "del",        "elif",     "else",     "except",  "exec",
-    "finally", "for",        "from",     "global",   "if",      "import",
-    "in",      "is",         "lambda",   "not",      "or",      "pass",
-    "print",   "raise",      "return",   "try",      "while",   "with",
+    "and",        "as",         "assert",   "break",  "class",
+    "continue",   "def",        "del",      "elif",   "else",
+    "except",     "exec",       "finally",  "for",    "from",
+    "global",     "if",         "import",   "in",     "is",
+    "lambda",     "not",        "or",       "pass",   "print",
+    "raise",      "return",     "try",      "while",  "with",
     "yield",
 
-    "buffer|", "bytearray|", "complex|", "False|",   "float|",  "frozenset|",
-    "int|",    "list|",      "long|",    "None|",    "set|",    "str|",
-    "tuple|",  "True|",      "type|",    "unicode|", "xrange|", NULL};
+    "buffer|",    "bytearray|", "complex|", "False|", "float|",
+    "frozenset|", "int|",       "list|",    "long|",  "None|",
+    "set|",       "str|",       "tuple|",   "True|",  "type|",
+    "unicode|",   "xrange|",    NULL};
 
 char *GO_HL_extensions[] = {".go", NULL};
-char *GO_HL_keywords[] = {
-    "if",     "for",   "range",   "while",   "defer",   "switch", "case",
-    "else",   "func",  "package", "import",  "type",    "struct", "import",
-    "const",  "var",
+char *GO_HL_keywords[] = {"if",      "for",     "range",  "while",  "defer",
+                          "switch",  "case",    "else",   "func",   "package",
+                          "import",  "type",    "struct", "import", "const",
+                          "var",
 
-    "nil|",   "true|", "false|",  "error|",  "err|",    "int|",   "int32|",
-    "int64|", "uint|", "uint32|", "uint64|", "string|", "bool|",  NULL};
+                          "nil|",    "true|",   "false|", "error|", "err|",
+                          "int|",    "int32|",  "int64|", "uint|",  "uint32|",
+                          "uint64|", "string|", "bool|",  NULL};
 
 char *BASH_HL_extensions[] = {".sh", NULL};
 char *BASH_HL_keywords[] = {
@@ -184,6 +204,9 @@ char *BASH_HL_keywords[] = {
 
 struct editorSyntax HLDB[] = {
     {"C", C_HL_extensions, C_HL_keywords, "//", "/*", "*/",
+     HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
+
+    {"JS", JS_HL_extensions, JS_HL_keywords, "//", "/*", "*/",
      HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
 
     {"PYTHON", PYTHON_HL_extensions, PYTHON_HL_keywords, "#", "\"\"\"",
@@ -446,10 +469,12 @@ void editorUpdateSyntax(erow *row) {
         int kw2 = keywords[j][klen - 1] == '|';
         int kw3 = keywords[j][klen - 1] == '|' && keywords[j][klen - 2] == '|';
         int kw4 = keywords[j][klen - 1] == '&';
-        if (kw2 || kw4)
+        if (kw4)
           klen--;
         else if (kw3)
           klen -= 2;
+        else if (kw2)
+          klen--;
 
         if (!strncmp(&row->render[i], keywords[j], klen) &&
             is_seperator(row->render[i + klen])) {
@@ -489,7 +514,7 @@ int editorSyntaxToColor(int hl) {
   switch (hl) {
   case HL_COMMENT:
   case HL_MLCOMMENT:
-    return 36;
+    return 35;
 
   case HL_KEYWORD1:
     return 33;
@@ -504,7 +529,7 @@ int editorSyntaxToColor(int hl) {
     return 92;
 
   case HL_STRING:
-    return 35;
+    return 36;
 
   case HL_NUMBER:
     return 31;
@@ -775,7 +800,7 @@ void editorSave() {
       editorSetStatusMessage("Save aborted");
       return;
     }
-    
+
     editorSelectSyntaxHighlighting();
   } else if (E.filename == NULL) {
     E.filename = editorPrompt("Save as: %s (ESC to cancel)", NULL);
@@ -889,7 +914,7 @@ struct append_buf {
   int len;
 };
 
-#define APPEND_BUF_INIT                                                              \
+#define APPEND_BUF_INIT                                                        \
   { NULL, 0 }
 
 void abAppend(struct append_buf *ab, const char *s, int len) {
@@ -1145,8 +1170,7 @@ void editorMoveCursor(int key) {
     break;
   case WORD_NEXT:
     if (row && E.cx < row->size) {
-      if (row->render[E.cx] != ' ' &&
-             row->render[E.cx] != TI_TAB_STOP) {
+      if (row->render[E.cx] != ' ' && row->render[E.cx] != TI_TAB_STOP) {
         while (row && E.cx < row->size && row->render[E.cx] != ' ' &&
                row->render[E.cx] != TI_TAB_STOP) {
           E.cx++;
@@ -1164,8 +1188,7 @@ void editorMoveCursor(int key) {
     break;
   case DEL_WORD_NEXT:
     if (row && E.cx < row->size) {
-      if (row->render[E.cx] != ' ' &&
-             row->render[E.cx] != TI_TAB_STOP) {
+      if (row->render[E.cx] != ' ' && row->render[E.cx] != TI_TAB_STOP) {
         while (row && E.cx < row->size && row->render[E.cx] != ' ' &&
                row->render[E.cx] != TI_TAB_STOP) {
           editorMoveCursor(ARROW_RIGHT);
@@ -1185,8 +1208,7 @@ void editorMoveCursor(int key) {
     break;
   case WORD_LAST:
     if (E.cx != 0) {
-      if (row->render[E.cx] != ' ' &&
-             row->render[E.cx] != TI_TAB_STOP) {
+      if (row->render[E.cx] != ' ' && row->render[E.cx] != TI_TAB_STOP) {
         while (E.cx != 0 && row->render[E.cx] != ' ' &&
                row->render[E.cx] != TI_TAB_STOP) {
           E.cx--;
@@ -1194,7 +1216,7 @@ void editorMoveCursor(int key) {
       } else {
         while ((E.cx != 0 && row->render[E.cx] == ' ') ||
                (E.cx != 0 && row->render[E.cx] == TI_TAB_STOP)) {
-            E.cx--;
+          E.cx--;
         }
       }
     } else if (E.cy > 0) {
@@ -1370,8 +1392,9 @@ void editorProcessKeypress() {
           E.new = 1;
           editorSave();
         } else if (!strcmp(command, "help") || !strcmp(command, "h")) {
-          editorSetStatusMessage("'w'/'write'('w' new to rename), '!q'/'!quit', 'wq'/'done', "
-                                 "'themes', 'set theme <color>'");
+          editorSetStatusMessage(
+              "'w'/'write', '!q'/'!quit', 'wq'/'done', "
+              "'themes', 'set theme <color>'");
         } else if (!strcmp(command, "wq") || !strcmp(command, "done")) {
           editorSave();
           free(command);
