@@ -21,6 +21,7 @@ Features
     - Python
     - Go
     - Rust
+    - Javascript
     - Bash (Needs a lot of improvement)
     - TODO...
 - Search functionality
@@ -49,10 +50,10 @@ Keybinds
 #### Normal mode
 
 - **/** : search
-    - 'Down arrow (↓) / Right arrow (→)' - Next Search
-    - 'Up arrow (↑) / Left arrow (←)' - Previous search result
-    - 'ESC' - Cancel search
-    - 'ENTER' - Go to current selection
+    - *'Down arrow (↓) / Right arrow (→)'* - Next Search
+    - *'Up arrow (↑) / Left arrow (←)'* - Previous search result
+    - *'ESC'* - Cancel search
+    - *'ENTER'* - Go to current selection
 
 - **h, j, k, l** : left, down, up, right movement keys
 
@@ -65,13 +66,13 @@ Keybinds
 - **ENTER** : insert row
 
 - **:** : open editor command line
-    - 'w' or 'write' - Save file
-    - 'q' or 'quit' - Quit, will prompt if unsaved changes
-    - '!q' or '!quit' - Force quit
-    - 'wq' or 'done' - Save and quit
-    - 'themes' - show available themes
-    - 'set theme <color>' - set theme
-    - 'h' or 'help' - Help menu, currently just directs user to README
+    - *'w'* or *'write'* - Save file
+    - *'q'* or *'quit'* - Quit, will prompt if unsaved changes
+    - *'!q'* or *'!quit'* - Force quit
+    - *'wq'* or *'done'* - Save and quit
+    - *'themes'* - show available themes
+    - *'set theme <color>'* - set theme
+    - *'h'* or *'help'* - Help menu, currently just directs user to README
 
 #### Insert mode
 
@@ -94,7 +95,6 @@ TODO
 ====
 
 - Syntax highlighting:
-    - Javascript
     - Zsh
     - Make
     - Git
