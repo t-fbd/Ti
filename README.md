@@ -5,7 +5,7 @@ This is solely being used as a learning tool and isn't intended to be used in li
 text editor.
 
 Keeping true with the original Kilo project, the SLOC for this project aims to stay under 1024 lines.
-Currently sitting at ~1090 lines according to sloc, but theres plenty of refactoring that can be done.
+Currently sitting at ~1100 lines according to sloc, but theres plenty of refactoring that can be done.
 
 See original kilo source code at [github/antirez](https://github.com/antirez/kilo "Kilo Text Editor")
 
