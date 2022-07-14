@@ -1,4 +1,4 @@
-.TH ti-man 1 "13 July 2022" "0.0.3" "ti man page"
+.TH ti-man 1 "13 July 2022" "VERSION 0.0.6" "ti man page"
 
 .Sh NAME
 .B Ti
@@ -17,16 +17,32 @@ Print current version of Ti
 .IP "-h|--help" \-
 Prints help
 
+.SH IN-EDITOR COMMANDS
+.IP ":q|quit" \-
+Quit, will prompt user to save if file has modifications
+.IP ":!q|!quit" \-
+Quit, will NOT prompt user to save if file has modifications
+.IP ":w|write" \-
+Save
+.IP ":wq|done" \-
+Save and quit
+.IP ":set theme <color>" \-
+Set theme to red, yellow, green, blue, cyan, magenta, or default
+.IP ":set lang <language>" \-
+Set language syntax to c, c++, go, rust, javascript, html
+.IP ":help" \-
+Show some keybinds
+
 .SH FILES
-.TP
-.I
-ti.c
 .TP
 .I
 ti
 .TP
 .I
-ti-man
+ti.c
+.TP
+.I
+ti.1
 .TP
 .I
 Makefile
@@ -47,12 +63,12 @@ Run ti with arg value as a flag, will not open file with flags present
 .BI 'Ti [filename]:'
 .TP
 .PP
-Run Ti with [filename] open for editing
+Run Ti with [filename] opened for editing
 .TP
 .BI 'Ti:' 
 .TP
 .PP
-Run ti with an open scratch pad
+Run Ti with an open scratch pad
 
 
 .SH GITHUB

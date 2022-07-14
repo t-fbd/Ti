@@ -4,8 +4,9 @@ Ti - A Kilo fork
 This is solely being used as a learning tool and isn't intended to be used in lieu of a well established
 text editor.
 
-Keeping true with the original Kilo project, the SLOC for this project aims to stay under 1024 lines.
-Currently sitting at ~1152 lines according to sloc, but theres plenty of refactoring that can be done.
+The initial plan was to keep true to the original Kilo project, and keep the SLOC for this project under 1024 lines.
+Currently sitting at ~1408 lines according to sloc, but theres plenty of refactoring that can be done, however, 
+I doubt it will get back below 1024 without having to strip features.
 
 See original kilo source code at [github/antirez](https://github.com/antirez/kilo "Kilo Text Editor")
 
@@ -16,7 +17,8 @@ Any advice is greatly appreciated!
 ASCIICAST
 =========
 
-[![asciicast](https://asciinema.org/a/508410.svg)](https://asciinema.org/a/508410)
+  [![asciicast](https://asciinema.org/a/508410.svg)](https://asciinema.org/a/508410)
+
 
 HOW TO INSTALL
 ==============
@@ -186,15 +188,15 @@ CLOC RESULTS
 
 diff against paigerutens [kilo-tut source](https://github.com/snaptoken/kilo-src/blob/master/kilo.c)
 
-github.com/AlDanial/cloc v 1.94  T=0.03 s (25.5 files/s, 36058.9 lines/s)
+github.com/AlDanial/cloc v 1.94  T=0.03 s (30.3 files/s, 49430.9 lines/s)
 
 |Language                   |  files       |    blank      |   comment      |      code |
 |:-------------------------:|:------------:|:-------------:|:--------------:|:---------:|
 |SUM:                       |              |               |                |           |
-| same                      |      0       |        0      |       110      |       528 |
-| modified                  |      1       |        0      |        40      |       207 |
-| added                     |      0       |       48      |        40      |       417 |
-| removed                   |      0       |        0      |         0      |        22 |
+| same                      |      0       |        0      |         0      |       524 |
+| modified                  |      1       |        0      |        26      |       210 |
+| added                     |      0       |       52      |         0      |       674 |
+| removed                   |      0       |        0      |       124      |        23 |
 
 
 diff against original [kilo](https://github.com/antirez/kilo/blob/master/kilo.c)
@@ -204,10 +206,10 @@ github.com/AlDanial/cloc v 1.94  T=0.03 s (30.1 files/s, 56822.1 lines/s)
 |Language                   |  files       |   blank       | comment        |  code  |
 |:-------------------------:|:------------:|:-------------:|:--------------:|:------:|
 |SUM:                       |              |               |                |        |
-| same                      |      0       |       0       |       1        |    89  |
-| modified                  |      1       |       0       |     103        |   519  |
-| added                     |      0       |      80       |      86        |   544  |
-| removed                   |      0       |       0       |      89        |   378  |
+| same                      |      0       |       0       |       0        |   101  |
+| modified                  |      1       |       0       |      26        |   580  |
+| added                     |      0       |      84       |       0        |   727  |
+| removed                   |      0       |       0       |     167        |   305  |
 
 
 
