@@ -4,10 +4,6 @@
 
 /*~~~~~~~~~~~~~~~~~~~~ includes ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-#define _DEFAULT_SOURCE
-#define _BSD_SOURCE
-#define _GNU_SOURCE
-
 #include <asm-generic/ioctls.h>
 #include <ctype.h>
 #include <errno.h>

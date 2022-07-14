@@ -2,7 +2,8 @@ VERSION = 0.0.5
 
 CC = gcc
 
-CFLAGS = -Wall -Wextra -pedantic -std=c99
+CPPFLAGS = -D_DEFAULT_SOURCE -D_BSD_SOURCE -D_POSIX_C_SOURCE=200809L -DVERSION=\"${VERSION}\"
+CFLAGS = -Wall -Wextra -pedantic -Wno-deprecated-declarations -std=c99 ${CPPFLAGS}
 
 PREFIX = /usr/local
 
@@ -35,7 +36,7 @@ ti: ti.c
 	${CC} $^ -o $@ ${CFLAGS}
 
 clean:
-	rm ti
+	rm ti ti-${VERSION}.tar.gz
 
 dist: clean
 	mkdir -p ti-${VERSION}
