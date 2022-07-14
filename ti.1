@@ -1,0 +1,60 @@
+.TH ti-man 1 "13 July 2022" "0.0.3" "ti man page"
+
+.Sh NAME
+.B Ti
+\- simple modal text editor
+
+.SH SYNOPSIS
+.B Ti [| FLAG |] or [| OPTIONS |]
+
+.SH DESCRIPTION
+.B Ti is a terminal based modal text editor built from a fork of Kilo. Uses VT100 escape sequences for keys, as well as only c standard libraries.
+
+.SH OPTIONS
+.IP "-v|--version" \-
+Print current version of Ti
+
+.IP "-h|--help" \-
+Prints help
+
+.SH FILES
+.TP
+.I
+ti.c
+.TP
+.I
+ti
+.TP
+.I
+ti-man
+.TP
+.I
+Makefile
+.TP
+.I
+LICENSE
+.TP
+.I
+README.md
+
+.SH EXAMPLES
+.TP
+.BI 'Ti [-arg]:'
+.TP
+.PP
+Run ti with arg value as a flag, will not open file with flags present
+.TP
+.BI 'Ti [filename]:'
+.TP
+.PP
+Run Ti with [filename] open for editing
+.TP
+.BI 'Ti:' 
+.TP
+.PP
+Run ti with an open scratch pad
+
+
+.SH GITHUB
+.PP
+https://www.github.com/tairenfd/Ti

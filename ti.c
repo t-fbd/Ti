@@ -1,6 +1,6 @@
 /*~~~~~~~~~~~~~~~~~~~~ version ~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-#define TI_VERSION "0.0.3"
+#define TI_VERSION "0.0.5"
 
 /*~~~~~~~~~~~~~~~~~~~~ includes ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -133,66 +133,70 @@ char *C_HL_keywords[] = {
 
 char *JS_HL_extensions[] = {".js", NULL};
 char *JS_HL_keywords[] = {
-    "await", "break", "case", "catch", "class", "const", "continue", "debugger", 
-    "default", "delete", "do", "else", "enum", "export", "extends", "false", "finally", 
-    "for", "function", "if", "implements", "import", "in", "instanceof", "interface", 
-    "let", "new", "null", "package", "private", "protected", "public", "return", 
-    "super", "switch", "static", "this", "throw", "try", "true", "typeof", "var", 
-    "void", "while", "with", "yield",
 
-    "str|", "arr|", "Object|", "set|", "document|",
+  "await",            "break",             "case",         "catch", 
+  "class",            "const",             "continue",     "debugger",
+  "default",          "delete",            "do",           "else", 
+  "enum",             "export",            "extends",      "false",
+  "finally",          "for",               "function",     "if", 
+  "implements",       "import",            "in",           "instanceof",
+  "interface",        "let",               "new",          "null", 
+  "package",          "private",           "protected",    "public",
+  "return",           "super",             "switch",       "static", 
+  "this",             "throw",             "try",          "true",
+  "typeof",           "var",               "void",         "while", 
+  "with",             "yield", 
   
-    "includes||", "style||", "value||", "addEventListener||", "querySelector||", 
-    "indexOf||", "split||", "concat||", "replace||", "trim||", "toLowerCase||", 
-    "toUpperCase||", "forEach||", "length||", "map||", "pop||", "slice||", "join||", 
-    "keys||", "value||", "style||", "size||", "add||", "delete||", "has||", "backgroundColor||", 
-    "textAlign||", "fontWeight||", "text||", "preventDefault||", NULL};
+  "str|",             "arr|",              "Object|",       "set|",
+  "document|", 
+  
+  "includes||",       "style||",           "value||",       "addEventListener||", 
+  "querySelector||",  "indexOf||",         "split||",       "concat||", 
+  "replace||",        "size||",            "add||",         "delete||",
+  "trim||",           "toLowerCase||",     "toUpperCase||", "forEach||", 
+  "join||",           "keys||",            "value||",       "style||",  
+  "has||",            "backgroundColor||", "textAlign||",   "fontWeight||", 
+  "text||", "size||", "add||", "delete||",
+  "preventDefault||", NULL};
 
 char *RUST_HL_extensions[] = {".rs", NULL};
 char *RUST_HL_keywords[] = {
-    "as",           "break",   "const",    "continue", "crate",    "else",
-    "enum",         "extern",  "false",    "fn",       "for",      "if",
-    "impl",         "in",      "let",      "loop",     "match",    "mod",
-    "move",         "mut",     "pub",      "ref",      "return",   "self",
-    "Self",         "static",  "struct",   "super",    "trait",    "true",
-    "false",        "type",    "unsafe",   "use",      "where",    "while",
-
-    "abstract|",    "become|", "box|",     "do|",      "final|",   "macro|",
-    "override|",    "priv|",   "typeof|",  "unsized|", "virtual|", "yield|",
-    "try|",
-
-    "macro_rules|", "union|",  "'static|",
-
-    "bool||",       "char||",  "str||",    "&str",     "u8||",     "u16||",
-    "u32||",        "u64||",   "u128||",   "i8||",     "i16||",    "i32||",
-    "i64||",        "i128||",
-
-    "println!&",    NULL};
+  "as",       "break",     "const",     "continue", "crate",
+  "else",     "enum",      "extern",    "false",    "fn",
+  "for",      "if",        "impl",      "in",       "let",
+  "loop",     "match",     "mod",       "move",     "mut",
+  "pub",      "ref",       "return",    "self",     "Self",
+  "static",   "struct",    "super",     "trait",    "true",
+  "false",    "type",      "unsafe",    "use",      "where",
+  "while",    "abstract|", "become|",   "box|",     "do|",
+  "final|",   "macro|",    "override|", "priv|",    "typeof|",
+  "unsized|", "virtual|",  "yield|",    "try|",     "macro_rules|",
+  "union|",   "'static|",  "bool||",    "char||",   "str||",
+  "&str",     "u8||",      "u16||",     "u32||",    "u64||",
+  "u128||",   "i8||",      "i16||",     "i32||",    "i64||",
+  "i128||",   "println!&", NULL};
 
 char *PYTHON_HL_extensions[] = {".py", NULL};
 char *PYTHON_HL_keywords[] = {
-    "and",        "as",         "assert",   "break",  "class",
-    "continue",   "def",        "del",      "elif",   "else",
-    "except",     "exec",       "finally",  "for",    "from",
-    "global",     "if",         "import",   "in",     "is",
-    "lambda",     "not",        "or",       "pass",   "print",
-    "raise",      "return",     "try",      "while",  "with",
+    "and",     "as",         "assert",   "break",    "class",   "continue",
+    "def",     "del",        "elif",     "else",     "except",  "exec",
+    "finally", "for",        "from",     "global",   "if",      "import",
+    "in",      "is",         "lambda",   "not",      "or",      "pass",
+    "print",   "raise",      "return",   "try",      "while",   "with",
     "yield",
 
-    "buffer|",    "bytearray|", "complex|", "False|", "float|",
-    "frozenset|", "int|",       "list|",    "long|",  "None|",
-    "set|",       "str|",       "tuple|",   "True|",  "type|",
-    "unicode|",   "xrange|",    NULL};
+    "buffer|", "bytearray|", "complex|", "False|",   "float|",  "frozenset|",
+    "int|",    "list|",      "long|",    "None|",    "set|",    "str|",
+    "tuple|",  "True|",      "type|",    "unicode|", "xrange|", NULL};
 
 char *GO_HL_extensions[] = {".go", NULL};
-char *GO_HL_keywords[] = {"if",      "for",     "range",  "while",  "defer",
-                          "switch",  "case",    "else",   "func",   "package",
-                          "import",  "type",    "struct", "import", "const",
-                          "var",
+char *GO_HL_keywords[] = {
+    "if",     "for",   "range",   "while",   "defer",   "switch", "case",
+    "else",   "func",  "package", "import",  "type",    "struct", "import",
+    "const",  "var",
 
-                          "nil|",    "true|",   "false|", "error|", "err|",
-                          "int|",    "int32|",  "int64|", "uint|",  "uint32|",
-                          "uint64|", "string|", "bool|",  NULL};
+    "nil|",   "true|", "false|",  "error|",  "err|",    "int|",   "int32|",
+    "int64|", "uint|", "uint32|", "uint64|", "string|", "bool|",  NULL};
 
 char *BASH_HL_extensions[] = {".sh", NULL};
 char *BASH_HL_keywords[] = {
@@ -738,10 +742,10 @@ void editorDelChar() {
     editorRowDelChar(row, E.cx - 1);
     E.cx--;
   } else {
-    E.cx = E.row[E.cy - 1].size;
     editorRowAppendString(&E.row[E.cy - 1], row->chars, row->size);
     editorDelRow(E.cy);
     E.cy--;
+    E.cx = E.row[E.cy].size - row->size;
   }
 }
 
@@ -774,7 +778,7 @@ void editorOpen(char *filename) {
 
   FILE *fp = fopen(filename, "r");
   if (!fp)
-    die("fopen");
+    return;
 
   char *line = NULL;
   size_t linecap = 0;
@@ -934,26 +938,21 @@ void abFree(struct append_buf *ab) { free(ab->b); }
 
 void editorScroll() {
   E.rx = 0;
-  if (E.cy < E.numrows) {
 
+  if (E.cy < E.numrows)
     E.rx = editorRowCxToRx(&E.row[E.cy], E.cx);
-  }
 
-  if (E.cy < E.rowoff) {
+  if (E.cy < E.rowoff)
     E.rowoff = E.cy;
-  }
 
-  if (E.cy >= E.rowoff + E.screenrows) {
+  if (E.cy >= E.rowoff + E.screenrows)
     E.rowoff = E.cy - E.screenrows + 1;
-  }
 
-  if (E.rx < E.coloff) {
+  if (E.rx < E.coloff)
     E.coloff = E.rx;
-  }
 
-  if (E.rx >= E.coloff + E.screencols) {
+  if (E.rx >= E.coloff + E.screencols)
     E.coloff = E.rx - E.screencols + 1;
-  }
 }
 
 void editorDrawRows(struct append_buf *ab) {
@@ -1262,7 +1261,7 @@ void editorExit() {
 void editorProcessKeypress() {
   static int quit_times = TI_QUIT_TIMES;
   int c = editorReadKey();
-  if (E.delete && !(c == 'x' || c == 'd' || c == 'w' || c == 'W')) {
+  if (E.delete &&!(c == 'x' || c == 'd' || c == 'w' || c == 'W')) {
     editorSetStatusMessage("deletetion cancelled");
     E.delete = 0;
   }
@@ -1345,7 +1344,7 @@ void editorProcessKeypress() {
         if (E.delete == 1) {
           editorMoveCursor(DEL_WORD_NEXT);
           E.delete = 0;
-        } else { 
+        } else {
           editorMoveCursor(WORD_NEXT);
         }
         break;
@@ -1400,9 +1399,8 @@ void editorProcessKeypress() {
           E.new = 1;
           editorSave();
         } else if (!strcmp(command, "help") || !strcmp(command, "h")) {
-          editorSetStatusMessage(
-              "'w'/'write', '!q'/'!quit', 'wq'/'done', "
-              "'themes', 'set theme +color'");
+          editorSetStatusMessage("'w'/'write', '!q'/'!quit', 'wq'/'done', "
+                                 "'themes', 'set theme +color'");
         } else if (!strcmp(command, "wq") || !strcmp(command, "done")) {
           editorSave();
           free(command);
@@ -1443,6 +1441,58 @@ void editorProcessKeypress() {
   quit_times = TI_QUIT_TIMES;
 }
 
+/*~~~~~~~~~~~~~~~~~~~~ flag options ~~~~~~~~~~~~~~~~~~*/
+
+void editorFlags(char flag) {
+  switch (flag) {
+  case 'h':
+    printf("usage: ti [options]/[filename]\n\r"
+           "\n\r"
+           "  if [filename] exists, it will be opened for editing. "
+           "If [filename] doesnt exist\n\r"
+           "      then a new file will be created for editing\n\r"
+           "\n\r"
+           "  -v: version\n\r"
+           "\n\r"
+           "  -h: help\n\r"
+           "\n\r"
+           "Modes:\n\r"
+           "  normal mode - 'ESC'\n\r"
+           "\n\r"
+           "  insert mode - 'i'\n\r"
+           "\n\r"
+           "  command mode - normal mode + ':'\n\r"
+           "\n\r"
+           "  delete mode - normal mode + 'd'\n\r"
+           "\n\r"
+           "Themes:\n\r"
+           "\n\r"
+           "  command-mode -> set theme <color>\n\r"
+           "\n\r"
+           "  available colors - red, green, blue, cyan, magenta, "
+           "yellow, default\n\r"
+           "\n\r"
+           "Save:\n\r"
+           "\n\r"
+           "  'w' or 'write' in command mode to save file\n\r"
+           "\n\r"
+           "  'wq' or 'done' save and exit\n\r"
+           "\n\r"
+           "Exit:\n\r"
+           "\n\r"
+           "  'q' or 'quit' in command mode to quit\n\r"
+           "\n\r"
+           "  '!q' or '!quit' in command mode to quit without save\n\r"
+           "\n\r");
+    break;
+  case 'v':
+    printf("Ti Version: %s\n\r", TI_VERSION);
+    break;
+  default:
+    break;
+  }
+}
+
 /*~~~~~~~~~~~~~~~~~~~~ init ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 void initEditor() {
@@ -1472,11 +1522,15 @@ int main(int argc, char *argv[]) {
   enableRawMode();
   initEditor();
   if (argc >= 2) {
+    if (argv[1][0] == '-') {
+      editorFlags(argv[1][1]);
+      return 0;
+    }
     editorOpen(argv[1]);
   }
 
   editorSetStatusMessage(
-      "<C-q> = Quit  |  <C-s> = Save | ESC = Movement mode | i = Insert mode");
+      "<C-q>/:q = Quit  |  <C-s>/:w = Save | ESC = NORMAL | i = INSERT | :help for more");
   while (1) {
     editorRefreshScreen();
     editorProcessKeypress();

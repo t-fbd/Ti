@@ -5,7 +5,7 @@ This is solely being used as a learning tool and isn't intended to be used in li
 text editor.
 
 Keeping true with the original Kilo project, the SLOC for this project aims to stay under 1024 lines.
-Currently sitting at ~1100 lines according to sloc, but theres plenty of refactoring that can be done.
+Currently sitting at ~1152 lines according to sloc, but theres plenty of refactoring that can be done.
 
 See original kilo source code at [github/antirez](https://github.com/antirez/kilo "Kilo Text Editor")
 
@@ -18,11 +18,49 @@ ASCIICAST
 
 [![asciicast](https://asciinema.org/a/mQMB04FYcA8uVQxpkHmbkgl4L.svg)](https://asciinema.org/a/mQMB04FYcA8uVQxpkHmbkgl4L)
 
+HOW TO INSTALL
+==============
+
+### Linux (will test other environments soon)
+
+- Clone git repo
+        
+        git clone git@github.com:tairenfd/Ti.git
+                           or                   
+        git clone git@tairenfd.xyz:/var/www/git/
+
+- cd into Ti/ directory
+- while in the directory run the command
+
+        sudo make install
+
+- If you dont want to install using sudo you can also run 'make' and
+either run it directly within the directory using './ti' or by
+installing to another directory within your path manually. This
+will just uninstalling slightly more tedious.
+- Run with 
+
+        ti \[options\] \[filename\]   
+
+
+- Makefile flags: make help, make install, make uninstall, make dist, make options, 
+make clean, make clean install
+
+### Uninstall
+
+- To uninstall Ti, if installed using the default Makefile, simply type use the below line
+
+        sudo make uninstall
+
+- This will uninstall the binary and remove the man pages
+- Now just delete the Ti/ folder and it should be completely removed!
+
 FEATURES
 ========
 
 - Simple Syntax Highlighting for:
     - C
+    - C++
     - Python
     - Go
     - Rust
@@ -30,14 +68,14 @@ FEATURES
     - Bash (Needs a lot of improvement)
     - TODO...
 - Search functionality
-- Modal editor, 2 modes - NORMAL/INSERT
+- Modal editor, 3 modes - NORMAL/INSERT/DELETE
 - Simple editor-command line
 - Set theme color
 
 KEYBINDS
 ========
 
-#### General bindings
+### General bindings
 
 - **Ctrl + q** : Quit, if unsaved changes, a prompt will appear and require you to press <ENTER> 
 
@@ -52,7 +90,7 @@ KEYBINDS
 - **Page Up** : Go up one page
 - **Page Down** : Go down one page
 
-#### Normal mode
+### Normal mode
 
 - **/** : search
     - *'Down arrow (↓) / Right arrow (→)'* - Next Search
@@ -80,12 +118,12 @@ KEYBINDS
     - *'set theme <color>'* - set theme
     - *'h'* or *'help'* - Help menu, currently just directs user to README
 
-#### Insert mode
+### Insert mode
 
 - All general keybindings should work, as well as normal typing to screen
 
-SETTINGS
-========
+SETTINGS AND MORE
+=================
 - TI_TAB_STOP = Tab render size
 - in editor-command: set theme <color> = Editor's "theme"
     - Black
@@ -96,7 +134,16 @@ SETTINGS
     - Magenta
     - Cyan
     - White / Default
+        
+- More info can be found in
 
+        man ti
+or
+
+        ti -h
+
+- 'ti -h' will show a help menu
+- 'ti -v' will show current version of Ti
 TODO
 ====
 
@@ -122,35 +169,34 @@ data is successfully saved to new file, however nothing is written to original f
 after new file opened. Error is from previous file not being written to, resulting in 
 'lost memory'.
 - Search function only finds the first match in a row
-- Del current word will go to end of next word when
-deleting a string of spaces/tabs
 
 CLOC RESULTS
 ============
 
 diff against paigerutens [kilo-tut source](https://github.com/snaptoken/kilo-src/blob/master/kilo.c)
-github.com/AlDanial/cloc v 1.94  T=0.03 s (34.6 files/s, 46928.2 lines/s)
+
+github.com/AlDanial/cloc v 1.94  T=0.03 s (25.5 files/s, 36058.9 lines/s)
 
 |Language                   |  files       |    blank      |   comment      |      code |
 |:-------------------------:|:------------:|:-------------:|:--------------:|:---------:|
 |SUM:                       |              |               |                |           |
-| same                      |      0       |        0      |       110      |       539 |
-| modified                  |      1       |        0      |        40      |       202 |
-| added                     |      0       |       50      |        39      |       359 |
-| removed                   |      0       |        0      |         0      |        16 |
+| same                      |      0       |        0      |       110      |       528 |
+| modified                  |      1       |        0      |        40      |       207 |
+| added                     |      0       |       48      |        40      |       417 |
+| removed                   |      0       |        0      |         0      |        22 |
 
 
 diff against original [kilo](https://github.com/antirez/kilo/blob/master/kilo.c)
 
-github.com/AlDanial/cloc v 1.94  T=0.03 s (30.4 files/s, 56173.0 lines/s)
+github.com/AlDanial/cloc v 1.94  T=0.03 s (30.1 files/s, 56822.1 lines/s)
 
 |Language                   |  files       |   blank       | comment        |  code  |
 |:-------------------------:|:------------:|:-------------:|:--------------:|:------:|
 |SUM:                       |              |               |                |        |
-| same                      |      0       |       0       |       1        |    87  |
-| modified                  |      1       |       0       |     103        |   509  |
-| added                     |      0       |      82       |      85        |   504  |
-| removed                   |      0       |       0       |      89        |   390  |
+| same                      |      0       |       0       |       1        |    89  |
+| modified                  |      1       |       0       |     103        |   519  |
+| added                     |      0       |      80       |      86        |   544  |
+| removed                   |      0       |       0       |      89        |   378  |
 
 
 
