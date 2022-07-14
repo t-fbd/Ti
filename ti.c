@@ -22,7 +22,7 @@
 /*~~~~~~~~~~~~~~~~~~~~ defines ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #define TI_QUIT_TIMES 1
-#define TI_TAB_STOP 8
+#define TI_TAB_STOP 4
 #define ESC '\x1b'
 #define CTRL_KEY(key) ((key)&0x1f)
 
@@ -102,6 +102,7 @@ struct editorConfig {
   int new;
   int delete;
   char *filename;
+  char setlang[10];
   int theme;
   char statusmsg[80];
   time_t statusmsg_time;
@@ -202,6 +203,56 @@ char *BASH_HL_keywords[] = {
 
     "$|",    NULL};
 
+char *HTML_HL_extensions[] = {".html", ".htm", NULL};
+char *HTML_HL_keywords[] = {
+    "<!DOCTYPE>", "<!DOCTYPE html>", "<!DOCTYPE",
+      
+    "<a>", "<abbr>", "<address>", "<area>", "<article>", "<aside>", "<audio>", 
+    "<b>", "<base>", "<bdi>", "<bdo>", "<blockquote>", "<body>", "<br>", "<button>", 
+    "<canvas>", "<caption>", "<cite>", "<code>", "<col>", "<colgroup>", "<data>", 
+    "<datalist>", "<dd>", "<del>", "<details>", "<dfn>", "<dialog>", "<div>", "<dl>", 
+    "<dt>", "<em>", "<embed>", "<fieldset>", "<figure>", "<footer>", "<form>", "<h1>", 
+    "<h2>", "<h3>", "<h4>", "<h5>", "<h6>", "<head>", "<header>", "<hgroup>", "<hr>", 
+    "<html>", "<i>", "<iframe>", "<img>", "<input>", "<ins>", "<kbd>", "<keygen>", 
+    "<label>", "<legend>", "<li>", "<link>", "<main>", "<map>", "<mark>", "<menu>", 
+    "<menuitem>", "<meta>", "<meter>", "<nav>", "<noscript>", "<object>", "<ol>", 
+    "<optgroup>", "<option>", "<output>", "<p>", "<param>", "<pre>", "<progress>", "<q>", 
+    "<rb>", "<rp>", "<rt>", "<rtc>", "<ruby>", "<s>", "<samp>", "<script>", "<section>", 
+    "<select>", "<small>", "<source>", "<span>", "<strong>", "<style>", "<sub>", "<summary>", 
+    "<sup>", "<table>", "<tbody>", "<td>", "<template>", "<textarea>", "<tfoot>", "<th>", 
+    "<thead>", "<time>", "<title>", "<tr>", "<track>", "<u>", "<ul>", "<var>", "<video>", 
+    "<wbr>","<a", "<abbr", "<address", "<area", "<article", "<aside", "<audio", 
+    "<b", "<base", "<bdi", "<bdo", "<blockquote", "<body", "<br", "<button", 
+    "<canvas", "<caption", "<cite", "<code", "<col", "<colgroup", "<data", 
+    "<datalist", "<dd", "<del", "<details", "<dfn", "<dialog", "<div", "<dl", 
+    "<dt", "<em", "<embed", "<fieldset", "<figure", "<footer", "<form", "<h1", 
+    "<h2", "<h3", "<h4", "<h5", "<h6", "<head", "<header", "<hgroup", "<hr", 
+    "<html", "<i", "<iframe", "<img", "<input", "<ins", "<kbd", "<keygen", 
+    "<label", "<legend", "<li", "<link", "<main", "<map", "<mark", "<menu", 
+    "<menuitem", "<meta", "<meter", "<nav", "<noscript", "<object", "<ol", 
+    "<optgroup", "<option", "<output", "<p", "<param", "<pre", "<progress", "<q", 
+    "<rb", "<rp", "<rt", "<rtc", "<ruby", "<s", "<samp", "<script", "<section", 
+    "<select", "<small", "<source", "<span", "<strong", "<style", "<sub", "<summary", 
+    "<sup", "<table", "<tbody", "<td", "<template", "<textarea", "<tfoot", "<th", 
+    "<thead", "<time", "<title", "<tr", "<track", "<u", "<ul", "<var", "<video", 
+    "<wbr",
+  
+    "</a>", "</abbr>", "</address>", "</area>", "</article>", "</aside>", "</audio>", 
+    "</b>", "</base>", "</bdi>", "</bdo>", "</blockquote>", "</body>", "</br>", "</button>", 
+    "</canvas>", "</caption>", "</cite>", "</code>", "</col>", "</colgroup>", "</data>", 
+    "</datalist>", "</dd>", "</del>", "</details>", "</dfn>", "</dialog>", "</div>", "</dl>", 
+    "</dt>", "</em>", "</embed>", "</fieldset>", "</figure>", "</footer>", "</form>", "</h1>", 
+    "</h2>", "</h3>", "</h4>", "</h5>", "</h6>", "</head>", "</header>", "</hgroup>", "</hr>", 
+    "</html>", "</i>", "</iframe>", "</img>", "</input>", "</ins>", "</kbd>", "</keygen>", 
+    "</label>", "</legend>", "</li>", "</link>", "</main>", "</map>", "</mark>", "</menu>", 
+    "</menuitem>", "</meta>", "</meter>", "</nav>", "</noscript>", "</object>", "</ol>", 
+    "</optgroup>", "</option>", "</output>", "</p>", "</param>", "</pre>", "</progress>", "</q>", 
+    "</rb>", "</rp>", "</rt>", "</rtc>", "</ruby>", "</s>", "</samp>", "</script>", "</section>", 
+    "</select>", "</small>", "</source>", "</span>", "</strong>", "</style>", "</sub>", "</summary>", 
+    "</sup>", "</table>", "</tbody>", "</td>", "</template>", "</textarea>", "</tfoot>", "</th>", 
+    "</thead>", "</time>", "</title>", "</tr>", "</track>", "</u>", "</ul>", "</var>", "</video>", 
+    "</wbr>",    NULL};
+
 struct editorSyntax HLDB[] = {
     {"C", C_HL_extensions, C_HL_keywords, "//", "/*", "*/",
      HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
@@ -209,8 +260,8 @@ struct editorSyntax HLDB[] = {
     {"JS", JS_HL_extensions, JS_HL_keywords, "//", "/*", "*/",
      HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
 
-    {"PYTHON", PYTHON_HL_extensions, PYTHON_HL_keywords, "#", "\"\"\"",
-     "\"\"\"", HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
+    {"PYTHON", PYTHON_HL_extensions, PYTHON_HL_keywords, "#", "/*", "*/",
+     HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
 
     {"GO", GO_HL_extensions, GO_HL_keywords, "//", "/*", "*/",
      HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
@@ -219,6 +270,9 @@ struct editorSyntax HLDB[] = {
      HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
 
     {"RUST", RUST_HL_extensions, RUST_HL_keywords, "//", "/*", "*/",
+     HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
+  
+    {"HTML", HTML_HL_extensions, HTML_HL_keywords, "//", "<!--- ", " --->",
      HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},
 };
 
@@ -372,7 +426,7 @@ int getWindowSize(int *rows, int *cols) {
 /*~~~~~~~~~~~~~~~~~~~~ syntax highlighting ~~~~~~~~~~~~~~~~~~~~*/
 
 int is_seperator(int c) {
-  return isspace(c) || c == '\0' || strchr(",.()+-/*=~%<>[];", c) != NULL;
+  return isspace(c) || c == '\0' || strchr(",.()+-/<>*~%[];", c) != NULL;
 }
 
 void editorUpdateSyntax(erow *row) {
@@ -428,6 +482,7 @@ void editorUpdateSyntax(erow *row) {
         continue;
       }
     }
+    
 
     if (E.syntax->flags & HL_HIGHLIGHT_STRINGS) {
       if (in_string) {
@@ -548,6 +603,24 @@ void editorSelectSyntaxHighlighting() {
     return;
 
   char *ext = strchr(E.filename, '.');
+  if (!strcmp(E.setlang, "c") || !strcmp(E.setlang, "c++")) {
+    ext = ".c";
+  }
+  else if (!strcmp(E.setlang, "python")){
+    ext = ".py";
+  }
+  else if (!strcmp(E.setlang, "rust")) {
+    ext = ".rs";
+  }
+  else if (!strcmp(E.setlang, "js")) {
+    ext = ".js";
+  }
+  else if (!strcmp(E.setlang, "html")) {
+    ext = ".html";
+  }
+  else if (!strcmp(E.setlang, "go")) {
+    ext = ".go";
+  }
 
   for (unsigned int j = 0; j < HLDB_ENTRIES; ++j) {
     struct editorSyntax *s = &HLDB[j];
@@ -793,15 +866,17 @@ void editorOpen(char *filename) {
 void editorSave() {
 
   if (E.new == 1) {
-    char tmpfilename[strlen(E.filename) + 1];
-    strcpy(tmpfilename, E.filename);
+    char *tmpfilename;
+    tmpfilename = strdup(E.filename);
     E.filename = editorPrompt("Save as: %s (ESC to cancel)", NULL);
     E.new = 0;
     if (E.filename == NULL || E.filename == tmpfilename) {
       editorSetStatusMessage("Save aborted");
+      free(tmpfilename);
       return;
     }
-
+    
+    free(tmpfilename);
     editorSelectSyntaxHighlighting();
   } else if (E.filename == NULL) {
     E.filename = editorPrompt("Save as: %s (ESC to cancel)", NULL);
@@ -1419,6 +1494,30 @@ void editorProcessKeypress() {
         } else if (!strcmp(command, "themes")) {
           editorSetStatusMessage("set theme <color>: blue, red, green, yellow, "
                                  "magenta, cyan, default");
+        } else if (!strcmp(command, "set lang c")) {
+          memset(E.setlang, '\0', 10);
+          strcpy(E.setlang, "c");
+          editorSelectSyntaxHighlighting();
+        } else if (!strcmp(command, "set lang rust")) {
+          memset(E.setlang, '\0', 10);
+          strcpy(E.setlang, "rust");
+          editorSelectSyntaxHighlighting();
+        } else if (!strcmp(command, "set lang js")) {
+          memset(E.setlang, '\0', 10);
+          strcpy(E.setlang, "js");
+          editorSelectSyntaxHighlighting();
+        } else if (!strcmp(command, "set lang go")) {
+          memset(E.setlang, '\0', 10);
+          strcpy(E.setlang, "go");
+          editorSelectSyntaxHighlighting();
+        } else if (!strcmp(command, "set lang c++")) {
+          memset(E.setlang, '\0', 10);
+          strcpy(E.setlang, "c++");
+          editorSelectSyntaxHighlighting();
+        } else if (!strcmp(command, "set lang html")) {
+          memset(E.setlang, '\0', 10);
+          strcpy(E.setlang, "html");
+          editorSelectSyntaxHighlighting();
         }
 
         free(command);
@@ -1504,6 +1603,7 @@ void initEditor() {
   E.new = 0;
   E.delete = 0;
   E.filename = NULL;
+  E.setlang[0] = '\0';
   E.theme = 37;
   E.statusmsg[0] = '\0';
   E.statusmsg_time = 0;
