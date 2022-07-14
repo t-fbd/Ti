@@ -1,3 +1,12 @@
+Copyright (c) 2022, Tairen Dunham <tairenfd at mailbox dot com>
+
+Ti is derived from code by Salvatore Sanfilippo and licensed under
+a BSD2 clause. It contains extensive changes which have been logged
+with a VCS as well as written documentation by Tairen Dunham under 
+the original BSD2 license.
+
+--------------------------------------------------------------------
+
 Copyright (c) 2016, Salvatore Sanfilippo <antirez at gmail dot com>
 
 All rights reserved.

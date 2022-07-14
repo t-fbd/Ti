@@ -840,8 +840,10 @@ char *editorRowsToString(int *buflen) {
 }
 
 void editorOpen(char *filename) {
-  free(E.filename);
-  E.filename = strdup(filename);
+  if (E.filename != filename) {
+    free(E.filename);
+    E.filename = strdup(filename);
+  }
 
   editorSelectSyntaxHighlighting();
 
@@ -866,18 +868,18 @@ void editorOpen(char *filename) {
 void editorSave() {
 
   if (E.new == 1) {
-    char *tmpfilename;
-    tmpfilename = strdup(E.filename);
-    E.filename = editorPrompt("Save as: %s (ESC to cancel)", NULL);
     E.new = 0;
-    if (E.filename == NULL || E.filename == tmpfilename) {
+    char *tmpfilename = NULL;
+    tmpfilename = editorPrompt("Save as: %s (ESC to cancel)", NULL);
+    if (tmpfilename == NULL || E.filename == tmpfilename) {
       editorSetStatusMessage("Save aborted");
       free(tmpfilename);
       return;
     }
     
-    free(tmpfilename);
-    editorSelectSyntaxHighlighting();
+    editorSave(E.filename);
+    editorOpen(tmpfilename);
+    return;
   } else if (E.filename == NULL) {
     E.filename = editorPrompt("Save as: %s (ESC to cancel)", NULL);
     if (E.filename == NULL) {
@@ -1181,6 +1183,10 @@ void editorSetStatusMessage(const char *fmt, ...) {
 char *editorPrompt(char *prompt, void (*callback)(char *, int)) {
   size_t bufsize = 128;
   char *buf = malloc(bufsize);
+  if(!buf) {
+    free(buf);
+    return 0;
+  }
   size_t buflen = 0;
   buf[0] = '\0';
   while (1) {
