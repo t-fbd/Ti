@@ -25,6 +25,9 @@ HOW TO INSTALL
 
 ### Linux (will test other environments soon)
 
+- Dependencies
+    - a C compiler, gcc is recommended
+    - git, to clone the repo
 - Clone git repo
         
         git clone git@github.com:tairenfd/Ti.git
@@ -42,7 +45,7 @@ installing to another directory within your path manually. This
 will just uninstalling slightly more tedious.
 - Run with 
 
-        ti \[options\] \[filename\]   
+        ti [options/filename]   
 
 
 - Makefile flags: make help, make install, make uninstall, make dist, make options, 
@@ -194,50 +197,77 @@ Should be memory safe soon.
 DESIGN/STRUCTURE
 =================
 
-Most of the functionality comes from a combination of the termios library, ANSII escape sequences, and a good chunk of standard c libraries.
-Termios is used to 1) contain a *termios* structure in which we can store the users current terminal structure 2) contain a new *termios*
-structure in which we will be using as the UI. This structure also allows us to enable raw mode - where input is available from STDIN character 
-by character, echoing is disable, special proccessing of terminal input/output characters is disabled. The flag constants set within the program
-are responsible for allowing us to exit canonical mode. Canonical mode takes input line by line/when a line delimiter is typed, this doesnt work 
-for us as we want to get each character input as its typed - regardless of a delimiter char.
+Most of the functionality comes from a combination of the termios library,
+ANSII escape sequences, and a good chunk of standard c libraries. Termios
+is used to 1) contain a *termios* structure in which we can store the users
+default terminal structure before opening the editor 2) contain a new *termios*
+structure in which we will be using as the UI. The termios library also allows us to
+enable raw mode - where input is available from STDIN character  by character,
+echoing is disable, special proccessing of terminal input/output characters
+is disabled. The flag constants set within the program are primarily responsible for
+allowing us to exit canonical mode as well as enable raw mode. Canonical mode takes input line by line/
+when a line delimiter is typed, this doesnt work  for us as we want to get each
+character input as its typed - regardless of a delimiter char.
 
-Once out of canonical mode and in raw mode, we can set up the users interface. All of this is done by appending escape sequences to the input 
-processing of the terminal (hence why you may see a lot of '\x1b' - ESC - or '\x1b[' - the control sequence introducer - character strings 
-around the code). The cursor movement, status messages, theming, rendering, etc, all is at least partly affected by the control sequences.
-A typical layout for a single escape/control code typically looks like:
+Once out of canonical mode and in raw mode, we can set up the users interface.
+All of this is done by appending escape sequences to the input  processing of
+the terminal (hence why you may see a lot of '\x1b' - ESC - or '\x1b[', the
+control sequence introducer - character strings  around the code). The cursor
+movement, status messages, theming, rendering, etc, all is at least partly
+affected by the control sequences. A typical layout for a single escape/control
+code typically looks like:
 
            CSI(n)m              
       '\x1b['  +  39  +  m      
       the CSI   arg(s)  function
 
-the above control sequence for instance would set the foreground color to the terminals default color. This is because CSI(m)n or '\x1b[(n)m' 
-is the control sequence for the 'Select Graphic Rendition' or 'SGR' which sets the display attributes of the terminal. 39 is simply the code 
-which is labeled as -> "39 | Default foreground color | Implementation defined (according to standard)". Codes 40-47 and 49 are what I use for the 
-terminal theme colors as those set the background colors. Most of the syntax highlighting is done with codes 30-37 - the foreground modifiers - or
-90 - 97 which are *bright* foreground colors. Most of the *bright* color options will eventually be added into Ti. A few are currently used for
-syntax highlighting though. These escape/control sequences combined with the toggling of raw mode and canonical mode lay much of the foundation for 
-the actual user interface in Ti.
+the above control sequence for instance would set the foreground color to the
+terminals default color. This is because CSI(m)n or '\x1b[(n)m'  is the control
+sequence for the 'Select Graphic Rendition' or 'SGR' which sets the display
+attributes of the terminal. 39 is simply the code  which is labeled as -> "39
+| Default foreground color | Implementation defined (according to standard)".
+Codes 40-47 and 49 are what I use for the  terminal theme colors as those set
+the background colors. Most of the syntax highlighting is done with codes 30-37
+- the foreground modifiers - or 90 - 97 which are *bright* foreground colors.
+Most of the *bright* color options will eventually be added into Ti. A few are
+currently used for syntax highlighting though. These escape/control sequences
+combined with the toggling of raw mode and canonical mode lay much of the
+foundation for  the actual user interface in Ti.
 
-The next hurdle after this is properly identifying and registering keypresses. This is done by essentially parsing out each key press(several keypresses result 
-in multiple chars) and either having variables within the global state such as cx/cy postions change due to the keypress, or inserting a normal printable key 
-onto the screen. One issue that arises during this is the rendering of tabs. The reason this is explicitely set within Ti is because tab length is up to the 
-host terminal, however we cant always know the host terminal, so instead we render tabs manually. This results in a 'render' array and 'character' array to
+The next hurdle after this is properly identifying and registering keypresses.
+This is done by essentially parsing out each key press(several keypresses
+result  in multiple chars) and either having variables within the global state
+such as cx/cy postions change due to the keypress, appending control sequences
+to the terminal input processing or inserting a normal printable key  onto the
+screen. One issue that arises during this is the rendering of tabs. The reason
+this is explicitely set within Ti is because tab length is usually up to the
+host terminal, however we cant always know the host terminal, so instead we
+render tabs manually. This results in a 'render' array and 'character' array to
 work with.
 
-One of the bigger challenges I faced was with memory leaks. Both the original kilo and kilotut repositories have several issues ad pull request regarding 
-memory leaks and potential fixes for a few. After a LOT of testing using valgrind, I was able to trace down every memory leak except one. This will be 
-something I fix, but currently it's in a much better position than it previously was, especially since the I know exactly which block of memory is being lost
-and why its happening(some more info in the known problems section). There were so many bugs related to creating and saving new files, movement within the 
-rows, etc, some of which were jsut hiding other errors behind them.
+One of the bigger challenges I faced was with memory leaks. Both the original
+kilo and kilotut repositories have several issues and pull request regarding
+memory leaks, as well as potential fixes for a few of them. After a LOT of testing using
+valgrind, I was able to trace down every memory leak except one. This will
+be  something I fix, but currently it's in a much better position than it
+previously was, especially since the I know exactly which block of memory is
+being lost and why its happening(some more info in the known problems section).
+There were also many bugs related to creating and saving new files, movement
+within the  rows, etc, some of which were jsut hiding other errors behind them.
 
-I decided to improve nearly every feature already present in Kilo - ie safely saving after changes are made, syntax highlighting and the search
-function (the search function is easily what I've worked on the least - I need to take some time to fix the same row search, a bug that was found ~6 years ago
-in Kilo). I also added a large amount of new features not present, such as real time syntax changing, modal operation, themes, increased syntax support 
-for several more languages (python, js, c, c++, go, rust, etc), improved line count, a man page, more verbose and informative flags(no flags are actually
-present in Kilo or the Kilotut afaik), and a generally more robust and better UX.
+I decided to improve nearly every feature already present in Kilo - ie safely
+saving after changes are made, syntax highlighting and the search function (the
+search function is easily what I've worked on the least - I need to take some
+time to fix the same row search, a bug that was found ~6 years ago in Kilo). I
+also added a large amount of new features not present, such as real time syntax
+changing, modal operation, themes, increased syntax support  for several more
+languages (python, js, c, c++, go, rust, etc), improved line count, a man page,
+more verbose and informative flags(no flags are actually present in Kilo or the
+Kilotut afaik), and a generally more robust and better UX.
 
-This is definitely not going to replace your go-to text editor, but maybe you can learn from this or use it to improve your own editor. Whatever you do, thank
-you for checking out the project!
+This is definitely not going to replace your go-to text editor, but maybe you
+can learn from this or use it to improve your own editor. Whatever you do,
+thank you for checking out the project!
 
 
 CLOC RESULTS
