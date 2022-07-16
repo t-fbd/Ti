@@ -4,6 +4,10 @@
 
 /*~~~~~~~~~~~~~~~~~~~~ includes ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+#define _DEFAULT_SOURCE
+#define _BSD_SOURCE
+#define _GNU_SOURCE 
+
 #include <asm-generic/ioctls.h>
 #include <ctype.h>
 #include <errno.h>
@@ -840,6 +844,7 @@ char *editorRowsToString(int *buflen) {
 }
 
 void editorOpen(char *filename) {
+
   if (E.filename != filename) {
     free(E.filename);
     E.filename = strdup(filename);
@@ -850,6 +855,8 @@ void editorOpen(char *filename) {
   FILE *fp = fopen(filename, "r");
   if (!fp)
     return;
+
+  E.filename = basename(filename);
 
   char *line = NULL;
   size_t linecap = 0;

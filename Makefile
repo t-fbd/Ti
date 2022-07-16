@@ -2,7 +2,6 @@ VERSION = 0.0.6
 
 CC = gcc
 
-CPPFLAGS = -D_DEFAULT_SOURCE -D_BSD_SOURCE -D_POSIX_C_SOURCE=200809L -DVERSION="${VERSION}"
 CFLAGS = -Wall -Wextra -pedantic -Wno-deprecated-declarations -std=c99 ${CPPFLAGS}
 
 PREFIX = /usr/local

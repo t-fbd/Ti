@@ -189,10 +189,11 @@ KNOWN ISSUES
 states 'definitely lost block' equal to the amount of data input since new save. All 
 data is successfully saved to new file, however nothing is written to original file 
 after new file opened. Error is from previous file not being written to, resulting in 
-'lost memory'.~~ managed to work all memory errors down to a single 128 byte empty buffer.
-Should be memory safe soon.
-
+'lost memory'.~~ 
+managed to work all memory errors down to a single 128 byte empty buffer.
+Should be completely memory safe soon.
 - Search function only finds the first match in a row
+- set language command will not work unless a filename is present
 
 DESIGN/STRUCTURE
 =================
