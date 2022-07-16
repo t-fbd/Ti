@@ -198,6 +198,11 @@ I think it's a much better UX than just using *BACKSPACE*, *INS*, or *CTRL-H*
 - Undo / Redo functionality
 - Open new empty file (this shouldnt be too difficult)
 - Rewrite C -> Rust
+- open empty buffer while in a file
+    - switch between buffers
+- run shell commands from editor-cli
+    - stdout to terminal
+- line numbers
 
 KNOWN ISSUES
 ============
