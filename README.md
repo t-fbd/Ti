@@ -170,12 +170,17 @@ TODO/POSSIBLE FUTURE DEVELOPMENTS
     - Git
     - Markdown
     - etc...
-- Scroll buffer with mouse -> may need ncurses? I debated about using ncurses to start with, but wanted
-to grasp a more solid understanding of c, the terminal, and their inter-workings. Truthfully I would like to remake it using better 
-suited libraries such as ncurses. At that point though I think I would rather move towards a rewrite in Rust or Go.
-- Refactor deletion functionalities: As kilo doesnt have any native funtionality for deleting the current word, next word, etc.
-I figured it'd be good to add some functionality for deletion keys while in *Normal* mode. I think it's a much better UX than
-just using *BACKSPACE*, *INS*, or *CTRL-H* (due to emulation of vt100 terminals ANSII escape codes. ANSII ^H == 8 == 0x08 == BS/BACKSPACE)
+- Scroll buffer with mouse -> may need ncurses? I debated about using ncurses
+to start with, but wanted to grasp a more solid understanding of c, the
+terminal, and their inter-workings. Truthfully I would like to remake it using
+better  suited libraries such as ncurses. At that point though I think I would
+rather move towards a rewrite in Rust or Go.
+- Refactor deletion functionalities: As kilo doesnt have any native
+funtionality for deleting the current word, next word, etc. I figured it'd
+be good to add some functionality for deletion keys while in *Normal* mode.
+I think it's a much better UX than just using *BACKSPACE*, *INS*, or *CTRL-H*
+(due to emulation of vt100 terminals ANSII escape codes. ANSII ^H == 8 == 0x08
+== BS/BACKSPACE)
 - Refactor binds
 - Refactor syntax/general improvement
 - Fix search function (same row functionality)
@@ -185,15 +190,14 @@ just using *BACKSPACE*, *INS*, or *CTRL-H* (due to emulation of vt100 terminals 
 
 KNOWN ISSUES
 ============
-- ~~When saving an existing file as a new file, it results in a small memory error. Valgrind
-states 'definitely lost block' equal to the amount of data input since new save. All 
-data is successfully saved to new file, however nothing is written to original file 
-after new file opened. Error is from previous file not being written to, resulting in 
-'lost memory'.~~ 
-managed to work all memory errors down to a single 128 byte empty buffer.
-Should be completely memory safe soon.
+- 1 known mem errors
+  - 128 byte empty buffer mem loss when writing an existing file to a new
+name.
 - Search function only finds the first match in a row
-- set language command will not work unless a filename is present
+- Set language command will not work unless a filename is present
+- If file was opened from a path other than current directory, it will not save
+changes to the file in the original directory. It will instead save a new copy
+of the original file, with any changes, to the current directory.
 
 DESIGN/STRUCTURE
 =================

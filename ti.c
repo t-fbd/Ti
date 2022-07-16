@@ -847,7 +847,7 @@ void editorOpen(char *filename) {
 
   if (E.filename != filename) {
     free(E.filename);
-    E.filename = strdup(filename);
+    E.filename = strdup(basename(filename));
   }
 
   editorSelectSyntaxHighlighting();
@@ -855,8 +855,6 @@ void editorOpen(char *filename) {
   FILE *fp = fopen(filename, "r");
   if (!fp)
     return;
-
-  E.filename = basename(filename);
 
   char *line = NULL;
   size_t linecap = 0;
