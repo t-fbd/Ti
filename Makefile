@@ -4,6 +4,8 @@ CC = gcc
 
 CFLAGS = -Wall -Wextra -pedantic -Wno-deprecated-declarations -std=c99 ${CPPFLAGS}
 
+DFLAGS = -g
+
 PREFIX = /usr/local
 
 DATAROOTDIR = ${PREFIX}/share
@@ -20,22 +22,42 @@ all: options ti
 
 options:
 	@echo "ti build options:"
+	@echo ""
 	@echo "CFLAGS   = ${CFLAGS}"
 	@echo "CC       = ${CC}"
+
+debug_options:
+	@echo ""
+	@echo "ti debugging build options:"
+	@echo ""
+	@echo "CFLAGS   = ${CFLAGS}"
+	@echo "DFLAGS   = ${DFLAGS}"
+	@echo "CC       = ${CC}"
+	@echo ""
 	
 help:
+	@echo ""
 	@echo "Ti ${VERSION}"
+	@echo ""
 	@echo "install - install binary and man page"
 	@echo "uninstall - rm binary from install path"
 	@echo "options - show current build options"
+	@echo "debug - compile with debug info"
 	@echo "clean - rm binary from current directory"
 	@echo "dist - package into tarball"
+	@echo ""
 
 ti: ti.c
 	${CC} $^ -o $@ ${CFLAGS}
 
+debug: debug_options
+	${CC} ${DFLAGS} ti.c -o tidebug ${CFLAGS}
+
 clean:
-	rm ti ti-${VERSION}.tar.gz
+	rm ti 
+	if test -f "ti-${VERSION}.tar.gz"; then	\
+		rm ti-${VERSION}.tar.gz; \
+	fi
 
 dist: clean
 	mkdir -p ti-${VERSION}

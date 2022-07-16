@@ -5,7 +5,7 @@
 \- simple modal text editor
 
 .SH SYNOPSIS
-.B Ti [| FLAG |] or [| OPTIONS |]
+.B Ti [| FLAGS |] [| FILENAME |]
 
 .SH DESCRIPTION
 .B Ti is a terminal based modal text editor built from a fork of Kilo. Uses VT100 escape sequences for keys, as well as only c standard libraries.
@@ -24,6 +24,8 @@ Quit, will prompt user to save if file has modifications
 Quit, will NOT prompt user to save if file has modifications
 .IP ":w|write" \-
 Save
+.IP ":w new|write new" \-
+Rename and open a new copy of current file
 .IP ":wq|done" \-
 Save and quit
 .IP ":set theme <color>" \-
@@ -36,29 +38,32 @@ Show some keybinds
 .SH FILES
 .TP
 .I
-ti
+ti - binary
 .TP
 .I
-ti.c
+tidebug - debug binary
 .TP
 .I
-ti.1
+ti.c - src
 .TP
 .I
-Makefile
+ti.1 - man
 .TP
 .I
-LICENSE
+Makefile - make
 .TP
 .I
-README.md
+LICENSE - license
+.TP
+.I
+README.md - readme
 
 .SH EXAMPLES
 .TP
-.BI 'Ti [-arg]:'
+.BI 'Ti [-flag]:'
 .TP
 .PP
-Run ti with arg value as a flag, will not open file with flags present
+Run ti with 1 or more flags, no scratchpad is opened in this scenario
 .TP
 .BI 'Ti [filename]:'
 .TP
@@ -71,6 +76,7 @@ Run Ti with [filename] opened for editing
 Run Ti with an open scratch pad
 
 
-.SH GITHUB
+.SH AUTHOR INFO
 .PP
 https://www.github.com/tairenfd/Ti
+https://www.git.tairenfd.xyz/Ti

@@ -48,14 +48,26 @@ will just uninstalling slightly more tedious.
         ti [options/filename]   
 
 
-- Makefile flags: make help, make install, make uninstall, make dist, make options, 
-make clean, make clean install
+### Makefile flags: 
+
+      make help, make install, make uninstall, make dist, make options, 
+      make clean, make clean install, make debug, make debug_options
+
+- make help: show makefile commands
+- make options: compiler flags
+- make debug_options: debugging compiler flags
+- make clean: remove current compiled binary and tarball from directory
+- make install: make and install binary and man page to local path, will have to have sudo
+access to install to /usr/local/bin, but you can change the path in the
+Makefile if you desire
+- make uninstall: uninstall binary from local path and remove man page
+- make dist: create a tarball of Ti
 
 ### Uninstall
 
 - To uninstall Ti, if installed using the default Makefile, simply type use the below line
 
-        sudo make uninstall
+      sudo make uninstall
 
 - This will uninstall the binary and remove the man pages
 - Now just delete the Ti/ folder and it should be completely removed!
