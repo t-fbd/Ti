@@ -198,16 +198,68 @@ DESIGN/STRUCTURE
 =================
 
 Most of the functionality comes from a combination of the termios library,
-ANSII escape sequences, and a good chunk of standard c libraries. Termios
+ANSII vt100/xterm escape sequences, and a good chunk of standard c libraries. Termios
 is used to 1) contain a *termios* structure in which we can store the users
 default terminal structure before opening the editor 2) contain a new *termios*
-structure in which we will be using as the UI. The termios library also allows us to
-enable raw mode - where input is available from STDIN character  by character,
-echoing is disable, special proccessing of terminal input/output characters
-is disabled. The flag constants set within the program are primarily responsible for
-allowing us to exit canonical mode as well as enable raw mode. Canonical mode takes input line by line/
-when a line delimiter is typed, this doesnt work  for us as we want to get each
-character input as its typed - regardless of a delimiter char.
+structure in which we will be using as the UI. The termios library also allows
+us to enable raw mode - where input is available from STDIN character  by
+character, echoing is disable, special proccessing of terminal input/output
+characters is disabled. The flag constants (input flags, output flags, control
+flags, and local flags)set within the program are primarily responsible for
+allowing us to exit canonical mode as well as enable raw mode. Canonical mode
+takes input line by line/ when a line delimiter is typed, this doesnt work
+for us as we want to get each character input as its typed - regardless of a
+delimiter char.
+
+termios structure
+
+    tcflag_t c_iflag;      // input modes
+    tcflag_t c_oflag;      // output modes
+    tcflag_t c_cflag;      // control modes
+    tcflag_t c_lflag;      // local modes
+    cc_t     c_cc[NCCS];   // special characters
+
+editor state structure
+
+    int cx, cy;                   // x,y position of characters
+    int rx;                       // position of render index
+    int rowoff;                   // offset of current row
+    int coloff;                   // offset of current column
+    int screenrows;               // total rows that can be displayed
+    int screencols;               // total columns that can be displaye
+    int numrows;                  // total number of rows in file/scratchpad
+    erow *row;                    // refer below to row structure, state of each row
+    int dirty;                    // 0 = all data saved, 1 = modified
+    int modal;                    // 0 =  insert mode, 1 = normal mod
+    int new;                      // 0 = save normally, 1 = write new file
+    int delete;                   // toggle 'delete mode', could be part of modal state, but I thought it made more sense seperate
+    char *filename;               // current filename
+    char setlang[10];             // placeholder for user defined syntax highlighting, will try to incorporate into syntax structure eventually
+    int theme;                    // editors 'theme'
+    char statusmsg[80];           // placeholder for status message string
+    time_t statusmsg_time;        // timestamp for status message so it can be cleared
+    struct editorSyntax *syntax;  // refer below to syntax structure, hold state of syntax hl
+    struct termios orig_termios;  // refer to termios structure, this contains state of original user terminal
+
+for row
+   
+      int idx;             // row index
+      int size;            // total size of row without \0
+      int rsize;           // total size of rendered row
+      char *chars;         // characters in row index
+      char *render;        // content rendered for screen
+      unsigned char *hl;   // syntax color for char in row index
+      int hl_open_comment; // row ends with open comment
+
+for syntax
+
+      char *filetype;                  // name of filetype displayed in status bar
+      char **filematch;                // array of filetypes to match against
+      char **keywords;                 // array of keywords to match against
+      char *single_line_comment_start; // string which denotes start of a comment
+      char *multi_line_comment_start;  // string which denotes start of a ml comment
+      char *multi_line_comment_end;    // string which denotes end of a ml comment
+      int flags;                       // flags if syntax hl is for number or string
 
 Once out of canonical mode and in raw mode, we can set up the users interface.
 All of this is done by appending escape sequences to the input  processing of
@@ -234,6 +286,69 @@ currently used for syntax highlighting though. These escape/control sequences
 combined with the toggling of raw mode and canonical mode lay much of the
 foundation for  the actual user interface in Ti.
 
+lets look at this chunk of code from Ti:
+
+    if (c == ESC) {
+      char seq[3];                               // when an ESC key is pressed, initialize a 3 byte sequence to store any potential bytes after ESC
+                
+    if (read(STDIN_FILENO, &seq[0], 1) != 1)     // return ESC on timeout of read into seq
+      return ESC;
+    if (read(STDIN_FILENO, &seq[1], 1) != 1)     // return ESC on timeout ''
+      return ESC;
+                  
+    if (seq[0] == '[') {                         // detected control sequence indicator 
+      if (seq[1] >= '0' && seq[1] <= '9') {      // check if *n* is between 0 and 9 after CSI, if not return ESC
+        if (read(STDIN_FILENO, &seq[2], 1) != 1) 
+          return ESC;
+        if (seq[2] == '~') {                     // if *n* is in appropriate range, check termianting char
+          switch (seq[1]) {                      // <esc> '[' (<keycode>) (';'<modifier>) '~'      -> keycode sequence, <keycode> and <modifier> are decimal numbers and default to 1 (vt)]
+          case '1':                              // <esc> '[' (<modifier>) <char>                  -> keycode sequence, <modifier> is a decimal number and defaults to 1 (xterm)
+            return HOME_KEY;
+          case '3':
+            return DEL_KEY;
+          case '4':
+            return END_KEY;
+          case '5':
+            return PAGE_UP;
+          case '6':
+            return PAGE_DOWN;
+          case '7':
+            return HOME_KEY;
+          case '8':
+            return END_KEY;
+          }
+
+and now the corresponding ansii sequences so you can get a better idea of why we're parsing things like this
+    
+    vt sequences:
+    <esc>[1~    - Home        <esc>[16~   -             <esc>[31~   - F17
+    <esc>[2~    - Insert      <esc>[17~   - F6          <esc>[32~   - F18
+    <esc>[3~    - Delete      <esc>[18~   - F7          <esc>[33~   - F19
+    <esc>[4~    - End         <esc>[19~   - F8          <esc>[34~   - F20
+    <esc>[5~    - PgUp        <esc>[20~   - F9          <esc>[35~   - 
+    <esc>[6~    - PgDn        <esc>[21~   - F10         
+    <esc>[7~    - Home        <esc>[22~   -             
+    <esc>[8~    - End         <esc>[23~   - F11         
+    <esc>[9~    -             <esc>[24~   - F12         
+    <esc>[10~   - F0          <esc>[25~   - F13         
+    <esc>[11~   - F1          <esc>[26~   - F14         
+    <esc>[12~   - F2          <esc>[27~   -             
+    <esc>[13~   - F3          <esc>[28~   - F15         
+    <esc>[14~   - F4          <esc>[29~   - F16         
+    <esc>[15~   - F5          <esc>[30~   -
+                    
+    xterm sequences:
+    <esc>[A     - Up          <esc>[K     -             <esc>[U     -
+    <esc>[B     - Down        <esc>[L     -             <esc>[V     -
+    <esc>[C     - Right       <esc>[M     -             <esc>[W     -
+    <esc>[D     - Left        <esc>[N     -             <esc>[X     -
+    <esc>[E     -             <esc>[O     -             <esc>[Y     -
+    <esc>[F     - End         <esc>[1P    - F1          <esc>[Z     -
+    <esc>[G     - Keypad 5    <esc>[1Q    - F2       
+    <esc>[H     - Home        <esc>[1R    - F3       
+    <esc>[I     -             <esc>[1S    - F4       
+    <esc>[J     -             <esc>[T     -
+
 The next hurdle after this is properly identifying and registering keypresses.
 This is done by essentially parsing out each key press(several keypresses
 result  in multiple chars) and either having variables within the global state
@@ -255,6 +370,14 @@ being lost and why its happening(some more info in the known problems section).
 There were also many bugs related to creating and saving new files, movement
 within the  rows, etc, some of which were jsut hiding other errors behind them.
 
+Below is an image of the valgrind results when running Ti with an existing file -> writing to and 
+saving that file -> create a duplicate file with new name -> write, save and quit new file.
+Any other scenarios I've ran into that have produced memory errors have been squashed other than this one.
+![Ti leaks](https://pasteboard.co/wfTBhCG2BE1r.png)
+
+for reference, these are the results from a much larger editor when performing the same operation
+![Other editor leaks](https://pasteboard.co/k70aKkxJ2j9W.png)
+
 I decided to improve nearly every feature already present in Kilo - ie safely
 saving after changes are made, syntax highlighting and the search function (the
 search function is easily what I've worked on the least - I need to take some
@@ -269,6 +392,50 @@ This is definitely not going to replace your go-to text editor, but maybe you
 can learn from this or use it to improve your own editor. Whatever you do,
 thank you for checking out the project!
 
+###### Sections in program -> find by searching for '/*~~~+ section'
+
+1) Version
+  - version info
+2) Includes
+  - library header files
+3) Defines
+  - define macros and enum declarations
+4) Data
+  - build structs for containing data of current 
+  term, original user term, syntax data, etc
+5) Filetypes
+  - Build syntax structures for each filetype
+6) Function Prototypes
+7) Terminal
+  - deals with low level terminal input, keystrokes,
+  error handling, etc
+9) Syntax highlighting
+  - deals with parsing/analyzing filetype and rows for 
+  syntax matches and coloring
+10) Row operations
+ - functions for operations within a given row
+ie append, delete, create, etc
+11) Editor Operations
+  - Operations that will typically call to row operations
+  in order to edit the row
+12) File I/O
+  - deals with file read and write operations
+13) Find/search
+  - functions for search functionality
+14) Append buffer
+ - Creates dynamic string to use as a buffer
+  for writing to STDOUT
+15) Output
+  - Draw to screen, uses append buffer to avoiding
+  constant write()'s
+16) Input
+  - instructions for keys input at a higher level than in Terminal section
+17) CLI flag options
+  - set program flag options for when the program is run with a flag(s)
+18) Init
+  - Initialize default editor state, contians main
+19) Footnotes
+
 
 CLOC RESULTS
 ============
@@ -277,7 +444,6 @@ diff against paigerutens [kilo-tut source](https://github.com/snaptoken/kilo-src
 
 |Language                   |  files       |    blank      |   comment      |      code |
 |:-------------------------:|:------------:|:-------------:|:--------------:|:---------:|
-|SUM:                       |              |               |                |           |
 | same                      |      0       |        0      |         0      |       522 |
 | modified                  |      1       |        0      |        26      |       212 |
 | added                     |      0       |       52      |         0      |       680 |
@@ -288,7 +454,6 @@ diff against original [kilo](https://github.com/antirez/kilo/blob/master/kilo.c)
 
 |Language                   |  files       |   blank       | comment        |  code  |
 |:-------------------------:|:------------:|:-------------:|:--------------:|:------:|
-|SUM:                       |              |               |                |        |
 | same                      |      0       |       0       |       0        |   102  |
 | modified                  |      1       |       0       |      26        |   583  |
 | added                     |      0       |      84       |       0        |   729  |

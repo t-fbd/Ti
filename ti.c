@@ -1542,7 +1542,7 @@ void editorProcessKeypress() {
   quit_times = TI_QUIT_TIMES;
 }
 
-/*~~~~~~~~~~~~~~~~~~~~ flag options ~~~~~~~~~~~~~~~~~~*/
+/*~~~~~~~~~~~~~~~~~~~~ cli-flag options ~~~~~~~~~~~~~~~~~~*/
 
 void editorFlags(char flag) {
   switch (flag) {
