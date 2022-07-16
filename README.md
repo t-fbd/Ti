@@ -394,10 +394,10 @@ within the  rows, etc, some of which were jsut hiding other errors behind them.
 Below is an image of the valgrind results when running Ti with an existing file -> writing to and 
 saving that file -> create a duplicate file with new name -> write, save and quit new file.
 Any other scenarios I've ran into that have produced memory errors have been squashed other than this one.
-![Ti leaks](https://pasteboard.co/wfTBhCG2BE1r.png)
+![image](https://user-images.githubusercontent.com/71906074/179369017-b6fbc465-336f-4c39-b023-7658837f2e61.png)
 
 for reference, these are the results from a much larger editor when performing the same operation
-![Other editor leaks](https://pasteboard.co/k70aKkxJ2j9W.png)
+![image](https://user-images.githubusercontent.com/71906074/179369053-be8f7aeb-4844-4df7-a290-e430cfb3c105.png)
 
 I decided to improve nearly every feature already present in Kilo - ie safely
 saving after changes are made, syntax highlighting and the search function (the
@@ -413,49 +413,49 @@ This is definitely not going to replace your go-to text editor, but maybe you
 can learn from this or use it to improve your own editor. Whatever you do,
 thank you for checking out the project!
 
-###### Sections in program -> find by searching for '/*~~~+ section'
+#### Sections in program -> find by searching for '/*~~~+ section'
 
-1) Version
-  - version info
-2) Includes
-  - library header files
-3) Defines
-  - define macros and enum declarations
-4) Data
-  - build structs for containing data of current 
-  term, original user term, syntax data, etc
-5) Filetypes
-  - Build syntax structures for each filetype
-6) Function Prototypes
-7) Terminal
-  - deals with low level terminal input, keystrokes,
-  error handling, etc
-9) Syntax highlighting
-  - deals with parsing/analyzing filetype and rows for 
-  syntax matches and coloring
-10) Row operations
- - functions for operations within a given row
+######  Version
+- version info
+######  Includes
+- library header files
+######  Defines
+- define macros and enum declarations
+######  Data
+- build structs for containing data of current 
+term, original user term, syntax data, etc
+######  Filetypes
+- Build syntax structures for each filetype
+######  Function Prototypes
+######  Terminal
+- deals with low level terminal input, keystrokes,
+error handling, etc
+######  Syntax highlighting
+- deals with parsing/analyzing filetype and rows for 
+syntax matches and coloring
+######  Row operations
+- functions for operations within a given row
 ie append, delete, create, etc
-11) Editor Operations
-  - Operations that will typically call to row operations
-  in order to edit the row
-12) File I/O
-  - deals with file read and write operations
-13) Find/search
-  - functions for search functionality
-14) Append buffer
- - Creates dynamic string to use as a buffer
-  for writing to STDOUT
-15) Output
-  - Draw to screen, uses append buffer to avoiding
-  constant write()'s
-16) Input
-  - instructions for keys input at a higher level than in Terminal section
-17) CLI flag options
-  - set program flag options for when the program is run with a flag(s)
-18) Init
-  - Initialize default editor state, contians main
-19) Footnotes
+######  Editor Operations
+- Operations that will typically call to row operations
+in order to edit the row
+######  File I/O
+- deals with file read and write operations
+######  Find/search
+- functions for search functionality
+Append buffer
+Creates dynamic string to use as a buffer
+for writing to STDOUT
+######  Output
+- Draw to screen, uses append buffer to avoiding
+constant write()'s
+######  Input
+- instructions for keys input at a higher level than in Terminal section
+######  CLI flag options
+- set program flag options for when the program is run with a flag(s)
+######  Init
+- Initialize default editor state, contians main
+Footnotes
 
 
 CLOC RESULTS
