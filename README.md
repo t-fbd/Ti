@@ -5,8 +5,8 @@ This is solely being used as a learning tool and isn't intended to be used in li
 text editor.
 
 The initial plan was to keep true to the original Kilo project, and keep the SLOC for this project under 1024 lines.
-Currently sitting at ~1408 lines according to sloc, but theres plenty of refactoring that can be done, however, 
-I doubt it will get back below 1024 without having to strip features.
+Currently sitting at ~1455 lines according to sloc, but theres plenty of refactoring that can be done, however, 
+I doubt it will get back below 1024 without having to strip features, but who knows!
 
 See original kilo source code at [github/antirez](https://github.com/antirez/kilo "Kilo Text Editor")
 
@@ -448,20 +448,20 @@ diff against paigerutens [kilo-tut source](https://github.com/snaptoken/kilo-src
 
 |Language                   |  files       |    blank      |   comment      |      code |
 |:-------------------------:|:------------:|:-------------:|:--------------:|:---------:|
-| same                      |      0       |        0      |         0      |       522 |
+| same                      |      0       |        0      |         0      |       523 |
 | modified                  |      1       |        0      |        26      |       212 |
-| added                     |      0       |       52      |         0      |       680 |
-| removed                   |      0       |        0      |       124      |        23 |
+| added                     |      0       |       54      |         0      |       720 |
+| removed                   |      0       |        0      |       124      |        22 |
 
 
 diff against original [kilo](https://github.com/antirez/kilo/blob/master/kilo.c)
 
 |Language                   |  files       |   blank       | comment        |  code  |
 |:-------------------------:|:------------:|:-------------:|:--------------:|:------:|
-| same                      |      0       |       0       |       0        |   102  |
-| modified                  |      1       |       0       |      26        |   583  |
-| added                     |      0       |      84       |       0        |   729  |
-| removed                   |      0       |       0       |     167        |   301  |
+| same                      |      0       |       0       |       0        |   101  |
+| modified                  |      1       |       0       |      26        |   589  |
+| added                     |      0       |      86       |       0        |   765  |
+| removed                   |      0       |       0       |     167        |   296  |
 
 
 

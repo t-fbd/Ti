@@ -103,7 +103,7 @@ struct editorConfig {
   erow *row;
   int dirty;
   int modal;
-  int new;
+  int newfile;
   int delete;
   char *filename;
   char setlang[10];
@@ -872,8 +872,8 @@ void editorOpen(char *filename) {
 
 void editorSave() {
 
-  if (E.new == 1) {
-    E.new = 0;
+  if (E.newfile) {
+    E.newfile = 0;
     char *tmpfilename = NULL;
     tmpfilename = editorPrompt("Save as: %s (ESC to cancel)", NULL);
     if (tmpfilename == NULL || E.filename == tmpfilename) {
@@ -1480,7 +1480,7 @@ void editorProcessKeypress() {
         } else if (!strcmp(command, "w") || !strcmp(command, "write")) {
           editorSave();
         } else if (!strcmp(command, "w new") || !strcmp(command, "write new")) {
-          E.new = 1;
+          E.newfile = 1;
           editorSave();
         } else if (!strcmp(command, "help") || !strcmp(command, "h")) {
           editorSetStatusMessage("'w'/'write', '!q'/'!quit', 'wq'/'done', "
@@ -1531,7 +1531,7 @@ void editorProcessKeypress() {
           memset(E.setlang, '\0', 10);
           strcpy(E.setlang, "html");
           editorSelectSyntaxHighlighting();
-        }
+        } 
 
         free(command);
         break;
@@ -1552,19 +1552,34 @@ void editorProcessKeypress() {
 /*~~~~~~~~~~~~~~~~~~~~ cli-flag options ~~~~~~~~~~~~~~~~~~*/
 
 void editorFlags(char flag) {
-  switch (flag) {
+ switch (flag) {
   case 'h':
-    printf("usage: ti [options]/[filename]\n\r"
+    printf("\n\r"
+           "\033[0;32m"
+           "usage: ti [options]/[filename]\n\r"
+           "\033[0m"
            "\n\r"
-           "  if [filename] exists, it will be opened for editing. "
+           "\033[0;34m"
+           "If [filename] exists, it will be opened for editing.\n\r"
+           "\033[0m"
+           "\n\r"
+           "\033[0;34m"
            "If [filename] doesnt exist\n\r"
            "      then a new file will be created for editing\n\r"
+           "\033[0m"
+           "\n\r"
+           "\033[0;34m"
+           "Flags:\n\r"
+           "\033[0m"
            "\n\r"
            "  -v: version\n\r"
            "\n\r"
            "  -h: help\n\r"
            "\n\r"
+           "\033[0;34m"
            "Modes:\n\r"
+           "\033[m"
+           "\n\r"
            "  normal mode - 'ESC'\n\r"
            "\n\r"
            "  insert mode - 'i'\n\r"
@@ -1573,20 +1588,26 @@ void editorFlags(char flag) {
            "\n\r"
            "  delete mode - normal mode + 'd'\n\r"
            "\n\r"
+           "\033[0;34m"
            "Themes:\n\r"
+           "\033[0m"
            "\n\r"
            "  command-mode -> set theme <color>\n\r"
            "\n\r"
            "  available colors - red, green, blue, cyan, magenta, "
            "yellow, default\n\r"
            "\n\r"
+           "\033[0;34m"
            "Save:\n\r"
+           "\033[0m"
            "\n\r"
            "  'w' or 'write' in command mode to save file\n\r"
            "\n\r"
            "  'wq' or 'done' save and exit\n\r"
            "\n\r"
+           "\033[0;34m"
            "Exit:\n\r"
+           "\033[0m"
            "\n\r"
            "  'q' or 'quit' in command mode to quit\n\r"
            "\n\r"
@@ -1594,11 +1615,19 @@ void editorFlags(char flag) {
            "\n\r");
     break;
   case 'v':
-    printf("Ti Version: %s\n\r", TI_VERSION);
+    printf("\033[0;33m"
+           "Ti Version: %s\n\r", TI_VERSION
+           "\033[0m");
     break;
   default:
     break;
   }
+  printf("\n\r");
+  for (int i = 0; i < 80; i++) {
+    printf("*");
+  }
+  printf("\n\r");
+  printf("\n\r");
 }
 
 /*~~~~~~~~~~~~~~~~~~~~ init ~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -1613,7 +1642,7 @@ void initEditor() {
   E.row = NULL;
   E.dirty = 0;
   E.modal = 1;
-  E.new = 0;
+  E.newfile = 0;
   E.delete = 0;
   E.filename = NULL;
   E.setlang[0] = '\0';
@@ -1632,10 +1661,17 @@ int main(int argc, char *argv[]) {
   initEditor();
   if (argc >= 2) {
     if (argv[1][0] == '-') {
-      editorFlags(argv[1][1]);
-      return 0;
+      int i = 1;
+      while (i < argc && argv[i][0] == '-') {
+        editorFlags(argv[i][1]);
+        i++;
+      }
+      if (i == argc) {
+        return 0;
+      } else {
+        editorOpen(argv[i]);
+      }
     }
-    editorOpen(argv[1]);
   }
 
   editorSetStatusMessage(
