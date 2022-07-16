@@ -882,7 +882,9 @@ void editorSave() {
       return;
     }
     
-    editorSave(E.filename);
+    if (E.filename) {
+      editorSave(E.filename);
+    }
     editorOpen(tmpfilename);
     return;
   } else if (E.filename == NULL) {

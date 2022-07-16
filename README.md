@@ -153,10 +153,9 @@ SETTINGS AND MORE
         
 - More info can be found in
 
-        man ti
-or
-
-        ti -h
+      man ti
+        or
+      ti -h
 
 - 'ti -h' will show a help menu
 - 'ti -v' will show current version of Ti
