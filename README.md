@@ -394,7 +394,7 @@ within the  rows, etc, some of which were jsut hiding other errors behind them.
 Below is an image of the valgrind results when running Ti with an existing file -> writing to and 
 saving that file -> create a duplicate file with new name -> write, save and quit new file.
 Any other scenarios I've ran into that have produced memory errors have been squashed other than this one.
-![image](https://user-images.githubusercontent.com/71906074/179369017-b6fbc465-336f-4c39-b023-7658837f2e61.png)
+![image](https://user-images.githubusercontent.com/71906074/179369207-2c346d15-ff49-4894-a137-15f1db3dc89c.png)
 
 for reference, these are the results from a much larger editor when performing the same operation
 ![image](https://user-images.githubusercontent.com/71906074/179369053-be8f7aeb-4844-4df7-a290-e430cfb3c105.png)
