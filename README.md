@@ -28,6 +28,7 @@ HOW TO INSTALL
 - Dependencies
     - a C compiler, gcc is recommended
     - git, to clone the repo
+    - gzip if planning to package as tarball
 - Clone git repo
         
         git clone git@github.com:tairenfd/Ti.git
@@ -45,8 +46,10 @@ installing to another directory within your path manually. This
 will just uninstalling slightly more tedious.
 - Run with 
 
-        ti [options/filename]   
+        ti [options] [filename]   
 
+- small note: ti will not open a scratch buffer when flags are added,
+it will open an existing file though
 
 ### Makefile flags: 
 
@@ -214,6 +217,8 @@ name.
 - If file was opened from a path other than current directory, it will not save
 changes to the file in the original directory. It will instead save a new copy
 of the original file, with any changes, to the current directory.
+- Ti will not open a scratch buffer when flags are added,
+it will open an existing file though
 
 DESIGN/STRUCTURE
 =================
@@ -234,6 +239,8 @@ delimiter char.
 
 termios structure
 
+    termios.h struct:
+
     tcflag_t c_iflag;      // input modes
     tcflag_t c_oflag;      // output modes
     tcflag_t c_cflag;      // control modes
@@ -241,6 +248,8 @@ termios structure
     cc_t     c_cc[NCCS];   // special characters
 
 editor state structure
+
+    editorConfig struct:
 
     int cx, cy;                   // x,y position of characters
     int rx;                       // position of render index
@@ -263,7 +272,9 @@ editor state structure
     struct termios orig_termios;  // refer to termios structure, this contains state of original user terminal
 
 for row
-   
+
+      erow struct:   
+
       int idx;             // row index
       int size;            // total size of row without \0
       int rsize;           // total size of rendered row
@@ -273,6 +284,8 @@ for row
       int hl_open_comment; // row ends with open comment
 
 for syntax
+      
+      editorSyntax struct:
 
       char *filetype;                  // name of filetype displayed in status bar
       char **filematch;                // array of filetypes to match against
@@ -281,6 +294,37 @@ for syntax
       char *multi_line_comment_start;  // string which denotes start of a ml comment
       char *multi_line_comment_end;    // string which denotes end of a ml comment
       int flags;                       // flags if syntax hl is for number or string
+
+      // kw1 = default, kw2 = |, kw3 = ||, kw4 = &         // keyword type identifiers
+
+      char *C_HL_extensions[] = {".c", ".h", ".cpp", NULL};  // set filetype
+      char *C_HL_keywords[] = {                              // set keywords, key identifier at end of string
+                                                                    
+          "switch",    "if",         "while",    "for",    "break",    // kw1 section
+          "continue",  "return",     "else",     "struct", "union",
+          "typedef",   "static",     "enum",     "class",  "case",
+                                                                  
+          "int|",      "long|",      "double|",  "float|", "char|",    // kw2 section
+          "unsigned|", "signed|",    "void|",                      
+                                                                      
+          "#define||", "#endif||",   "#error||", "#if||",  "#ifdef||",  // kw3 section
+          "#ifndef||", "#include||", "#undef||", 
+          
+          NULL};                                                        // kw4 words could go here, just finish the keyword
+                                                                        // with an &
+
+
+      struct editorSyntax HLDB[] = { //HLDB refers to highlight datase, an array of Syntax structs
+      
+          {"C", C_HL_extensions, C_HL_keywords, "//", "/*", "*/",        // example of syntax highlighting struct for c
+           HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS},                 // filetype, filematch, keywords, sls, mls, mle,
+                                                                         // hl string or number
+      }
+
+
+      #define HLDB_ENTRIES (sizeof(HLDB) / sizeof(HLDB[0])) // constant to store the length of highlight database, 
+                                                            // gets the total size of array / an item in array
+                                                            // pretty standard way of finding array size
 
 Once out of canonical mode and in raw mode, we can set up the users interface.
 All of this is done by appending escape sequences to the input  processing of
@@ -307,7 +351,8 @@ currently used for syntax highlighting though. These escape/control sequences
 combined with the toggling of raw mode and canonical mode lay much of the
 foundation for  the actual user interface in Ti.
 
-lets look at this chunk of code from Ti:
+lets look at this small chunk of code from Ti's editorReadKey fx, which handles low level 
+terminal input and is called by editorProcessKeypress:
 
     if (c == ESC) {
       char seq[3];                               // when an ESC key is pressed, initialize a 3 byte sequence to store any potential bytes after ESC
@@ -338,6 +383,9 @@ lets look at this chunk of code from Ti:
           case '8':
             return END_KEY;
           }
+                                                // The return values are set in the enum in the *defines* section
+                                                // The low level handling is done here, once we have the return value,
+                                                // thats pumped into the editorProcessKeypress fx
 
 and now the corresponding ansii sequences so you can get a better idea of why we're parsing things like this
     
