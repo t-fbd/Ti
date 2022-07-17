@@ -1671,6 +1671,8 @@ int main(int argc, char *argv[]) {
       } else {
         editorOpen(argv[i]);
       }
+    } else {
+      editorOpen(argv[1]);
     }
   }
 
