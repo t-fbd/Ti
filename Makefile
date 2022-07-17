@@ -61,10 +61,10 @@ clean:
 
 dist: clean
 	mkdir -p ti-${VERSION}
-	cp -R LICENSE Makefile README.md t.1 ti-${VERSION}
-	tar -cf dwm-${VERSION}.tar dwm-${VERSION}
-	gzip dwm-${VERSION}.tar
-	rm -rf dwm-${VERSION}
+	cp -R LICENSE Makefile README.md ti.1 ti-${VERSION}
+	tar -cf ti-${VERSION}.tar ti-${VERSION}
+	gzip ti-${VERSION}.tar
+	rm -rf ti-${VERSION}
 
 install: all
 	mkdir -p ${DESTDIR}${PREFIX}/bin
