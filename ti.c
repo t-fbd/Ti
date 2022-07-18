@@ -538,16 +538,15 @@ void editorUpdateSyntax(erow *row) {
         if (!strncmp(&row->render[i], keywords[j], klen) &&
             is_seperator(row->render[i + klen])) {
 
-          if (kw2 && !kw3) {
+          if (kw2 && !kw3)
             memset(&row->hl[i], HL_KEYWORD2, klen);
-          } else if (kw3) {
+          else if (kw3)
             memset(&row->hl[i], HL_KEYWORD3, klen);
-          } else if (kw4) {
+          else if (kw4)
             memset(&row->hl[i], HL_KEYWORD4, klen);
-          } else {
+          else
             memset(&row->hl[i], HL_KEYWORD1, klen);
-          }
-
+          
           i += klen;
           break;
         }
@@ -1490,20 +1489,15 @@ void editorProcessKeypress() {
           free(command);
           editorExit();
           break;
-        } else if (!strcmp(command, "set theme blue")) {
-          E.theme = 34;
-        } else if (!strcmp(command, "set theme red")) {
-          E.theme = 31;
-        } else if (!strcmp(command, "set theme green")) {
-          E.theme = 32;
-        } else if (!strcmp(command, "set theme yellow")) {
-          E.theme = 33;
-        } else if (!strcmp(command, "set theme magenta")) {
-          E.theme = 35;
-        } else if (!strcmp(command, "set theme cyan")) {
-          E.theme = 36;
-        } else if (!strcmp(command, "set theme default")) {
-          E.theme = 37;
+        
+        } else if (strstr(command, "set theme")) { 
+          char *colors[7] = {"red", "green", "yellow", "blue", "magenta", "cyan", "default"};
+          for (int i = 0; i < 7; ++i) {
+                if(strstr(command, colors[i])) {
+                  E.theme = 31 + i;
+                }
+          }
+        
         } else if (!strcmp(command, "themes")) {
           editorSetStatusMessage("set theme <color>: blue, red, green, yellow, "
                                  "magenta, cyan, default");
