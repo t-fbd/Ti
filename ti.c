@@ -1530,7 +1530,12 @@ void editorProcessKeypress() {
 /*~~~~~~~~~~~~~~~~~~~~ cli-flag options ~~~~~~~~~~~~~~~~~~*/
 
 void editorFlags(char flag) {
- switch (flag) {
+  printf("\n\r");
+  for (int i = 0; i < 80; i++) {
+    printf("*");
+  }
+  printf("\n\r");
+  printf("\n\r"); switch (flag) {
   case 'h':
     printf("\n\r"
            "\033[0;32m"
@@ -1601,10 +1606,6 @@ void editorFlags(char flag) {
     break;
   }
   printf("\n\r");
-  for (int i = 0; i < 80; i++) {
-    printf("*");
-  }
-  printf("\n\r");
   printf("\n\r");
 }
 
@@ -1644,14 +1645,12 @@ int main(int argc, char *argv[]) {
         editorFlags(argv[i][1]);
         i++;
       }
-      if (i == argc) {
+      if (i == argc)
         return 0;
-      } else {
-        editorOpen(argv[i]);
-      }
-    } else {
-      editorOpen(argv[1]);
+      
+      editorOpen(argv[i]);
     }
+    editorOpen(argv[1]);
   }
 
   editorSetStatusMessage(
