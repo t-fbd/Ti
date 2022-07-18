@@ -1489,7 +1489,6 @@ void editorProcessKeypress() {
           free(command);
           editorExit();
           break;
-        
         } else if (strstr(command, "set theme")) { 
           char *colors[7] = {"red", "green", "yellow", "blue", "magenta", "cyan", "default"};
           for (int i = 0; i < 7; ++i) {
@@ -1497,36 +1496,21 @@ void editorProcessKeypress() {
                   E.theme = 31 + i;
                 }
           }
-        
         } else if (!strcmp(command, "themes")) {
           editorSetStatusMessage("set theme <color>: blue, red, green, yellow, "
                                  "magenta, cyan, default");
-        } else if (!strcmp(command, "set lang c")) {
-          memset(E.setlang, '\0', 10);
-          strcpy(E.setlang, "c");
-          editorSelectSyntaxHighlighting();
-        } else if (!strcmp(command, "set lang rust")) {
-          memset(E.setlang, '\0', 10);
-          strcpy(E.setlang, "rust");
-          editorSelectSyntaxHighlighting();
-        } else if (!strcmp(command, "set lang js")) {
-          memset(E.setlang, '\0', 10);
-          strcpy(E.setlang, "js");
-          editorSelectSyntaxHighlighting();
-        } else if (!strcmp(command, "set lang go")) {
-          memset(E.setlang, '\0', 10);
-          strcpy(E.setlang, "go");
-          editorSelectSyntaxHighlighting();
-        } else if (!strcmp(command, "set lang c++")) {
-          memset(E.setlang, '\0', 10);
-          strcpy(E.setlang, "c++");
-          editorSelectSyntaxHighlighting();
-        } else if (!strcmp(command, "set lang html")) {
-          memset(E.setlang, '\0', 10);
-          strcpy(E.setlang, "html");
-          editorSelectSyntaxHighlighting();
-        } 
-
+        } else if (strstr(command, "set lang")) { 
+          char *langs[6] = {"c", "c++", "rust", "js", "go", "html"};
+          for (int i = 0; i < 6; ++i) {
+                if(strstr(command, langs[i])) {
+                  memset(E.setlang, '\0', 10);
+                  strcpy(E.setlang, langs[i]);
+                  editorSelectSyntaxHighlighting();
+                }
+          }
+        
+        }
+            
         free(command);
         break;
       }
